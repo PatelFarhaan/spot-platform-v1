@@ -1,12 +1,3 @@
-# get all instances in the autoscaling group
-# get details of the spot instance
-# how to know if a spot is available
-# check if current spot price is greater than the existing price
-# if yes then create the new launch config and delete the existing one
-# create a new ASG and attach it to the target group
-
-
-# check on how many availability zones a region has and add them all to the ASG
 import sys
 import time
 from aws_services import AWS

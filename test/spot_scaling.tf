@@ -29,10 +29,10 @@ resource "aws_autoscaling_group" "gitlab_autoscaling_group" {
   target_group_arns    = [aws_alb_target_group.gitlab_alb_target_group.arn]
   launch_configuration = aws_launch_configuration.gitlab_launch_configuration.name
 
-  health_check_type         = "EC2"
   health_check_grace_period = 30
   default_cooldown          = 15
   capacity_rebalance        = true
+  health_check_type         = "EC2"
 
   instance_refresh {
     strategy = "Rolling"
@@ -42,5 +42,12 @@ resource "aws_autoscaling_group" "gitlab_autoscaling_group" {
     }
   }
 
-  tags = [var.tags]
+  tags = [
+  for key, value in var.tags : {
+    key                 = key
+    value               = value
+    propagate_at_launch = true
+
+  }
+  ]
 }

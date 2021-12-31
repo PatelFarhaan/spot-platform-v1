@@ -11,4 +11,12 @@ Crate multiple launch config for each az?
 Check the cheapest price of the instance in the AZ and launch the on-demand there
 Instance warnup
 
+Use c5a.xlarge for OD metrics per host per env -> $110.88 per month OD -> $46.72800 Spot
+
+A True multi-cloud platform: AWS, Azure, GCP, Alibaba, 
+
+Jenkins CI with TF and Packer installed
+Dynamic node provisioning for Jenkins
+
+Use docker client on all machine -> prometheus
 Multi-region
