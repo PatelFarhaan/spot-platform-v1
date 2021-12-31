@@ -10,3 +10,5 @@ Crate multiple launch config for each az?
 
 Check the cheapest price of the instance in the AZ and launch the on-demand there
 Instance warnup
+
+Multi-region
