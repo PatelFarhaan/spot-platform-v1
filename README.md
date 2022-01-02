@@ -26,8 +26,9 @@ need of the traffic.
 - Deployment Rollback as needed
 - Managed Multi-region deployment
 - Managed Ops and scaling for end users
-- Managed Database services (MySQL, Psql, and Mongo)
+- Email Services inbuild on application on-boarding
 - Monitoring and altering for all apps on the platform
+- Managed Database services (MySQL, Psql, and Mongo)
 - Cost Optimization as major services are hosted on SPOT
 - Webhooks for custom integrations for almost all services
 - List of all resource usage integrated right in the dashboard
@@ -38,3 +39,31 @@ need of the traffic.
 
 # OWNER AND MAINTAINER
 **[FARHAAN PATEL](https://github.com/PatelFarhaan "FARHAAN PATEL")**
+
+
+# TODO:
+- [ ] Run terrafrom on EC2 through ASSUME ROLE
+- [ ] Download/Upload an SSH key for enduser if he does not have one
+- [ ] Open LB for all availability zones and public subnets
+- [ ] Dynamically change the gunicorn processes and threads as per instance cores in each deployment
+- [ ] Create and manage the ACM accordingly
+- [ ] Certifacte expire and renew alters
+- [ ] Increase and decrease volume size
+- [ ] Build an end user dashboard where they can import their keys and check their instance utilization
+- [ ] EBS Affinity per AZ
+- [ ] Support EFS attachment for data persistance and ingest code to attach the EFS to instance at launch time
+- [ ] Create a docker-compose file for all agents -> End user instances
+- [ ] Create a docker-compile file for automation of Jenkins and other stuff -> server side
+- [ ] To know when to use and replace t3 unlimited to standard and vice versa
+- [ ] Support multiple instances for SPOT
+
+
+# CURRENTLY WORKING ON
+Migrate to Spot Fleet
+Jenkins CI to create custom baked images using Packer
+
+
+# CUSTOM COMMANDS
+```bash
+aws ec2 describe-subnets --filter Name=vpc-id,Values=vpc-8d6cc4f6 --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId'
+```

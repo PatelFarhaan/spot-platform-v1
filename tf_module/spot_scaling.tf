@@ -1,15 +1,15 @@
 // Creating Launch Config
 resource "aws_launch_configuration" "gitlab_launch_configuration" {
   image_id        = var.ami_id
-  name_prefix     = "gitlab-tf-"
+  key_name        = var.ssh_key_name
+  name_prefix     = "${var.app_name}-"
   instance_type   = var.spot_instance_type
   spot_price      = var.spot_instance_price
-  key_name        = var.launch_config_key_name
   security_groups = [aws_security_group.gitlab_instance_security_group.id]
 
   root_block_device {
-    volume_size           = 8
     delete_on_termination = true
+    volume_size           = var.spot_ebs_volume_size
   }
 
   lifecycle {
@@ -20,12 +20,12 @@ resource "aws_launch_configuration" "gitlab_launch_configuration" {
 
 // Creating the ASG
 resource "aws_autoscaling_group" "gitlab_autoscaling_group" {
-  name_prefix          = "gitlab-asg-"
   vpc_zone_identifier  = var.subnet_ids
-  min_size             = var.asg_min_instances
-  max_size             = var.asg_max_instances
-  desired_capacity     = var.asg_desired_instances
+  name_prefix          = "${var.app_name}-"
+  min_size             = var.spot_asg_min_instances
+  max_size             = var.spot_asg_max_instances
   termination_policies = ["ClosestToNextInstanceHour"]
+  desired_capacity     = var.spot_asg_desired_instances
   target_group_arns    = [aws_alb_target_group.gitlab_alb_target_group.arn]
   launch_configuration = aws_launch_configuration.gitlab_launch_configuration.name
 

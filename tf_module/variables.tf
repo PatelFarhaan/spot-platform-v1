@@ -8,24 +8,27 @@ variable "tags" {
   type = map(string)
 }
 
+variable "app_name" {}
+
 variable "aws_region" {}
 
 variable "subnet_ids" {
   type = list(string)
 }
+variable "ssh_key_name" {}
 
 variable "acm_certificate" {}
-
-variable "asg_min_instances" {}
-
-variable "asg_max_instances" {}
 
 variable "spot_instance_type" {}
 
 variable "spot_instance_price" {}
 
-variable "asg_desired_instances" {}
+variable "spot_ebs_volume_size" {}
 
-variable "launch_config_key_name" {}
+variable "spot_asg_min_instances" {}
 
-variable "asg_availability_zones" {}
+variable "spot_asg_max_instances" {}
+
+variable "spot_asg_desired_instances" {}
+
+variable "spot_asg_availability_zones" {}

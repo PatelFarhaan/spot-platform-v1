@@ -18,9 +18,9 @@ def get_current_spot_price(instance_type: str) -> list:
     return response
 
 
-def add_percentage_increase_to_spot_price(spot_price: float, add_spot_price_percentage: float) -> float:
-    new_spot_price = spot_price + (spot_price * add_spot_price_percentage/100)
-    return new_spot_price
+def add_percentage_increase_to_spot_price(spot_price: float, _add_spot_price_percentage: float) -> float:
+    _new_spot_price = spot_price + (spot_price * _add_spot_price_percentage/100)
+    return _new_spot_price
 
 
 def get_availability_zones(region: str):
@@ -56,10 +56,14 @@ def compare_with_previous_spot_price(previous_spot_price, lowest_spot_price) -> 
 
 def update_config_file(config_file_path, az, spot_price):
     config_file = read_json_file(config_file_path)
-    config_file["previous_spot_price"] = spot_price
-    config_file["spot_instance_price"] = str(spot_price)
-    config_file["auto_scaling_group"]["availability_zones"] = az
+    config_file["spot_config"]["previous_price"] = spot_price
+    config_file["spot_config"]["instance_price"] = str(spot_price)
+    config_file["spot_config"]["auto_scaling_group"]["availability_zones"] = az
     save_json(config_file_path, config_file)
+
+
+def get_public_subnets_for_vpc(vpc_id: str) -> list[str]:
+    ...
 
 
 if __name__ == "__main__":
@@ -67,9 +71,9 @@ if __name__ == "__main__":
     config_file = read_json_file(config_file_path)
 
     aws_region = config_file.get("aws_region")
-    previous_spot_price = config_file.get("previous_spot_price")
-    spot_instance_type = config_file.get("spot_instance_type")
-    add_spot_price_percentage = config_file.get("add_spot_price_percentage")
+    spot_instance_type = config_file.get("spot_config", {}).get("instance_type")
+    previous_spot_price = config_file.get("spot_config", {}).get("previous_price")
+    add_spot_price_percentage = config_file.get("spot_config", {}).get("add_percentage")
 
     latest_spot_prices_per_az = get_current_spot_price(spot_instance_type)
     lowest_spot_price = get_lowest_spot_price(latest_spot_prices_per_az)

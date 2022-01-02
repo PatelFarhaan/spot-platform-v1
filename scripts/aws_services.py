@@ -14,17 +14,16 @@ class AWS(object):
     def __init__(self):
         self.ec2 = "ec2"
         self.autoscale = "autoscaling"
-        self.aws_region = os.getenv("aws_region")
+        self.aws_region = os.getenv("AWS_REGION")
+        self.aws_profile = os.getenv("AWS_PROFILE")
+        self.session = boto3.Session(profile_name=self.aws_profile)
         self.aws_config = {
-            "region_name": self.aws_region,
-            "aws_access_key_id": "",
-            "aws_secret_access_key": "",
-            "aws_session_token": ""
+            "region_name": self.aws_region
         }
 
     def get_autoscale_client(self):
         try:
-            as_client = boto3.client(self.autoscale, **self.aws_config)
+            as_client = self.session.client(self.autoscale, **self.aws_config)
             return as_client
         except ClientError as e:
             print(f"Code Exception is: {e.response['Error']['Code']}")
@@ -34,7 +33,7 @@ class AWS(object):
 
     def get_ec2_client(self):
         try:
-            ec2_client = boto3.client(self.ec2, **self.aws_config)
+            ec2_client = self.session.client(self.ec2, **self.aws_config)
             return ec2_client
         except ClientError as e:
             print(f"Code Exception is: {e.response['Error']['Code']}")
