@@ -7,7 +7,6 @@ terraform {
     template = {
       version = "2.2.0"
     }
-
   }
 }
 
@@ -20,7 +19,7 @@ locals {
 
 // Using pre-declared module
 module "gitlab-runners-dev-us-east-1" {
-  source = "./../../../../test"
+  source = "./../../../../tf_module"
 
   env                    = local.config_data.env
   tags                   = local.config_data.tags
