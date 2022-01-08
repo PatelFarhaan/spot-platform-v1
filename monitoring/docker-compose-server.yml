@@ -1,0 +1,70 @@
+version: "3"
+networks:
+  monitoring:
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: "prometheus"
+    volumes:
+      - /home/ubuntu/docker_data/prometheus:/prometheus
+      - /home/ubuntu/docker_data/prometheus/etc:/etc/prometheus
+      - /home/ubuntu/docker_data/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    user: "1000"
+    restart: always
+    command: |
+      --web.enable-lifecycle
+      --storage.tsdb.retention.time=7d
+      --config.file=/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring
+  loki:
+    image: grafana/loki:2.4.0
+    container_name: "loki"
+    volumes:
+      - /home/ubuntu/docker_data/loki:/etc/loki
+    ports:
+      - "3100:3100"
+    restart: always
+    command: -config.file=/etc/loki/loki-config.yml
+    networks:
+      - monitoring
+  grafana:
+    image: grafana/grafana
+    container_name: "grafana"
+    user: "1000"
+    volumes:
+      - /home/ubuntu/docker_data/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    restart: always
+    networks:
+      - monitoring
+  webhook_monitoring:
+    build: .
+    container_name: "webhook_monitoring"
+    ports:
+      - "5000:5000"
+    restart: always
+    volumes:
+      - /home/ubuntu/docker_data/prometheus:/application/data
+    environment:
+      - AWS_REGION=us-east-1
+    networks:
+      - monitoring
+#  cadvisor:
+#    image: gcr.io/google-containers/cadvisor:latest
+#    container_name: cadvisor
+#    pid: "host"
+#    restart: always
+#    ports:
+#      - "8100:8100"
+#    volumes:
+#      - /home/ubuntu/docker_data/cadvisor:/rootfs:ro
+#      - /home/ubuntu/docker_data/cadvisor/sys:/sys:ro
+#      - /home/ubuntu/docker_data/cadvisor/var/run:/var/run:ro
+#      - /home/ubuntu/docker_data/cadvisor/dev/disk/:/dev/disk:ro
+#      - /home/ubuntu/docker_data/cadvisor/var/lib/docker/:/var/lib/docker:ro
+#    networks:
+#      - monitoring

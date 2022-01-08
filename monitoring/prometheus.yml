@@ -1,0 +1,19 @@
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: null
+global:
+  evaluation_interval: 30s
+  scrape_timeout: 10s
+  scrape_interval: 30s
+rule_files: null
+scrape_configs:
+  - job_name: node-exporter
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+    - targets:
+        - 3.95.60.90:9100
+      labels:
+        environment: development
+        application: r-service-lookup-spot
