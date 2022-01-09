@@ -43,26 +43,28 @@ need of the traffic.
 
 # TODO:
 - [ ] EBS Affinity per AZ
+- [ ] Replace unhealthy instances
 - [ ] Increase and decrease volume size
 - [ ] Certifacte expire and renew alters
 - [ ] Support multiple instances for SPOT
 - [ ] Create and manage the ACM accordingly
 - [ ] Run terrafrom on EC2 through ASSUME ROLE
 - [ ] Open LB for all availability zones and public subnets
+- [ ] Add Resource limits to docker container in compose file
+- [ ] Create Events Rules for autoscaling and spot in Cloudwatch
+- [ ] Checks on ebs volume threshold reaches beyond a certain limit
 - [ ] Download/Upload an SSH key for enduser if he does not have one
 - [ ] Create a docker-compose file for all agents -> End user instances
 - [ ] To know when to use and replace t3 unlimited to standard and vice versa
 - [ ] Create a docker-compile file for automation of Jenkins and other stuff -> server side
+- [ ] Validate Subscription is from SNS -> Decode the Signature and compare it with the token
+- [ ] Create an activity page for the frontend where all events from cloudwatch will be displayed
 - [ ] Dynamically change the gunicorn processes and threads as per instance cores in each deployment
 - [ ] Build an end user dashboard where they can import their keys and check their instance utilization
+- [ ] Able to spin a new environment based on any existing one along with db and everything for testing
+- [ ] If the env is not active for x mins, disable the env to save cost -> Non prod env/ option from UI
 - [ ] Support EFS attachment for data persistance and ingest code to attach the EFS to instance at launch time
-- [ ] Replace unhealthy instances
-- [ ] Create Events Rules for autoscaling and spot in Cloudwatch
-- [ ] Create an activity page for the frontend where all events from cloudwatch will be displayed
 - [ ] Dashboard where it displays all ASG and all instances in each, buttons on instances to connect to it + health in green or red
-- [ ] Checks on ebs volume threshold reaches beyond a certain limit
-- [ ] Validate Subscription is from SNS -> Decode the Signature and compare it with the token
-- [ ] Add Resource limits to docker container in compose file
 
 
 # END USER DASHBOARD
@@ -95,6 +97,8 @@ aws ec2 describe-subnets --filter Name=vpc-id,Values=vpc-8d6cc4f6 --query 'Subne
 5. Cloudwatch spot sns: https://ec2spotworkshops.com/running_spark_apps_with_emr_on_spot_instances/tracking_spot_interruptions.html
 6. All Grafana Dashboards: https://play.grafana.org/d/000000012/grafana-play-home?orgId=1
 7. https://pinpoint-apm.github.io/pinpoint/#
+8. Grafana dashboard for different databases, mongo: 8339
+9. Alerting Rules: https://awesome-prometheus-alerts.grep.to/rules.html
 
 
 # KEYPOINTS

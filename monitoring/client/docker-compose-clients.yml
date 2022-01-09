@@ -11,7 +11,7 @@ services:
     ports:
       - "1514:1514"
     restart: always
-    command: |
+    command:
       -config.expand-env=true
       -config.file=/etc/promtail/promtail-config.yml
     environment:
@@ -26,5 +26,19 @@ services:
     pid: "host"
     ports:
       - "9100:9100"
+    networks:
+      - monitoring
+  cadvisor:
+    image: 'google/cadvisor:latest'
+    container_name: cadvisor
+    restart: always
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk:/dev/disk/:ro
+    ports:
+      - "8080:8080"
     networks:
       - monitoring

@@ -15,17 +15,19 @@ scrape_configs:
           - localhost
         labels:
           job: nginx
-          host: ${HOSTNAME}
-          environment: ${ENV}
+          node: worker
+          environment: '${ENV}'
+          instance: '${HOSTNAME}'
           __path__: /var/log/nginx/*log
   - job_name: supervisor
     static_configs:
       - targets:
-        - localhost
+          - localhost
         labels:
+          node: worker
           job: supervisor
-          host: ${HOSTNAME}
-          environment: ${ENV}
+          environment: '${ENV}'
+          instance: '${HOSTNAME}'
           __path__: /var/log/supervisor/*log
   - job_name: varlogs
     static_configs:
@@ -33,15 +35,17 @@ scrape_configs:
           - localhost
         labels:
           job: varlogs
-          host: ${HOSTNAME}
-          environment: ${ENV}
+          node: worker
+          environment: '${ENV}'
+          instance: '${HOSTNAME}'
           __path__: /var/log/*log
   - job_name: docker
     pipeline_stages:
-      - docker: {}
+      - docker: { }
     static_configs:
       - labels:
           job: docker
-          host: ${HOSTNAME}
-          environment: ${ENV}
+          node: worker
+          environment: '${ENV}'
+          instance: '${HOSTNAME}'
           __path__: /var/lib/docker/containers/*/*-json.log
