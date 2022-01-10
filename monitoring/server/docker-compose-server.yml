@@ -1,6 +1,8 @@
-version: "3"
+version: "3.8"
+
 networks:
   monitoring:
+
 services:
   prometheus:
     image: prom/prometheus
@@ -19,6 +21,7 @@ services:
       --config.file=/etc/prometheus/prometheus.yml
     networks:
       - monitoring
+
   loki:
     image: grafana/loki:2.4.0
     container_name: "loki"
@@ -30,6 +33,7 @@ services:
     command: -config.file=/etc/loki/loki-config.yml
     networks:
       - monitoring
+
   grafana:
     image: grafana/grafana
     container_name: "grafana"
@@ -43,6 +47,7 @@ services:
     restart: always
     networks:
       - monitoring
+
   webhook_monitoring:
     build: .
     container_name: "webhook_monitoring"
@@ -55,6 +60,7 @@ services:
       - AWS_REGION=us-east-1
     networks:
       - monitoring
+
   cadvisor:
     image: 'google/cadvisor:latest'
     container_name: cadvisor
@@ -69,6 +75,7 @@ services:
       - "8080:8080"
     networks:
       - monitoring
+
   promtail:
     image: grafana/promtail:2.4.0
     container_name: promtail
@@ -86,6 +93,7 @@ services:
       - HOSTNAME=master-node
     networks:
       - monitoring
+
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
     container_name: node_exporter
@@ -93,5 +101,81 @@ services:
     pid: "host"
     ports:
       - "9100:9100"
+    networks:
+      - monitoring
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    privileged: true
+    restart: always
+    user: root
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - /home/ubuntu/docker_data/jenkins:/var/jenkins_home
+    networks:
+      - monitoring
+
+  nexus:
+    image: sonatype/nexus3:latest
+    container_name: nexus-registry
+    restart: always
+    user: root
+    volumes:
+      - /home/ubuntu/docker_data/nexus:/nexus-data
+    ports:
+      - "8082:8081"
+    networks:
+      - monitoring
+
+  uptime_kuma:
+    container_name: uptime-kuma
+    image: louislam/uptime-kuma:1
+    restart: always
+    volumes:
+      - /home/ubuntu/docker_data/uptime_kuma:/app/data
+    ports:
+      - "3001:3001"
+    networks:
+      - monitoring
+
+  semaphore_db:
+    image: mariadb:latest
+    container_name: semaphore_db
+    expose:
+      - 3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_USER=semaphore
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=semaphore
+    volumes:
+      - /home/ubuntu/docker_data/semaphore_db/:/var/lib/mysql
+    networks:
+      - monitoring
+
+  semaphore:
+    image: ansiblesemaphore/semaphore
+    container_name: semaphore
+    user: root
+    ports:
+      - "3002:3000"
+    depends_on:
+      - semaphore_db
+    volumes:
+      -  /home/ubuntu/docker_data/semaphore:/etc/semaphore
+    environment:
+      - SEMAPHORE_DB_HOST=semaphore_db
+      - SEMAPHORE_DB_PORT=3306
+      - SEMAPHORE_DB_USER=semaphore
+      - SEMAPHORE_DB_PASS=password
+      - SEMAPHORE_DB=semaphore
+      - SEMAPHORE_ADMIN=admin
+      - SEMAPHORE_ADMIN_EMAIL=patel.farhaaan@gmail.com
+      - SEMAPHORE_ADMIN_NAME=Your Name
+      - SEMAPHORE_ADMIN_PASSWORD="Monitoring"
+      - SEMAPHORE_PLAYBOOK_PATH=/etc/semaphore
     networks:
       - monitoring

@@ -8,32 +8,36 @@ global:
   scrape_interval: 30s
 rule_files: null
 scrape_configs:
-  - job_name: master-node-exporter
+  - job_name: master-metrics
     metrics_path: /metrics
     scheme: http
     static_configs:
       - targets:
-          - prometheus:9090
+          - cadvisor:8080
+          - node_exporter:9100
         labels:
           environment: development
           application: monitoring-control-plane
+    relabel_configs:
+      - source_labels: [__address__]
+        action: replace
+        regex: '([^:]+)(:[0-9]+)?'
+        replacement: ${1}
+        target_label: instance
 
-  - job_name: worker-node-exporter
+  - job_name: worker-metrics
     metrics_path: /metrics
     scheme: http
     static_configs:
       - targets:
           - 3.237.71.223:9100
-        labels:
-          environment: development
-          application: r-service-lookup-spot
-
-  - job_name: worker-cadvisor
-    metrics_path: /metrics
-    scheme: http
-    static_configs:
-      - targets:
           - 3.237.71.223:8080
         labels:
           environment: development
           application: r-service-lookup-spot
+    relabel_configs:
+      - source_labels: [__address__]
+        action: replace
+        regex: '([^:]+)(:[0-9]+)?'
+        replacement: ${1}
+        target_label: instance

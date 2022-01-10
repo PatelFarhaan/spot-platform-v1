@@ -45,15 +45,18 @@ need of the traffic.
 - [ ] EBS Affinity per AZ
 - [ ] Replace unhealthy instances
 - [ ] Increase and decrease volume size
-- [ ] Certifacte expire and renew alters
+- [ ] Certificate expire and renew alters
 - [ ] Support multiple instances for SPOT
 - [ ] Create and manage the ACM accordingly
-- [ ] Run terrafrom on EC2 through ASSUME ROLE
+- [ ] Run terraform on EC2 through ASSUME ROLE
+- [ ] Regular S3 backup of the monitoring node data
 - [ ] Open LB for all availability zones and public subnets
+- [ ] Define max servers and don't exceed the max at any cost
+- [ ] Dynamic node provisioning in Jenkins for running builds
 - [ ] Add Resource limits to docker container in compose file
 - [ ] Create Events Rules for autoscaling and spot in Cloudwatch
 - [ ] Checks on ebs volume threshold reaches beyond a certain limit
-- [ ] Download/Upload an SSH key for enduser if he does not have one
+- [ ] Download/Upload an SSH key for end user if he does not have one
 - [ ] Create a docker-compose file for all agents -> End user instances
 - [ ] To know when to use and replace t3 unlimited to standard and vice versa
 - [ ] Create a docker-compile file for automation of Jenkins and other stuff -> server side
@@ -62,8 +65,8 @@ need of the traffic.
 - [ ] Dynamically change the gunicorn processes and threads as per instance cores in each deployment
 - [ ] Build an end user dashboard where they can import their keys and check their instance utilization
 - [ ] Able to spin a new environment based on any existing one along with db and everything for testing
-- [ ] If the env is not active for x mins, disable the env to save cost -> Non prod env/ option from UI
-- [ ] Support EFS attachment for data persistance and ingest code to attach the EFS to instance at launch time
+- [ ] If the env is not active for x min's, disable the env to save cost -> Non prod env/ option from UI
+- [ ] Support EFS attachment for data persistence and ingest code to attach the EFS to instance at launch time
 - [ ] Dashboard where it displays all ASG and all instances in each, buttons on instances to connect to it + health in green or red
 
 
@@ -73,14 +76,12 @@ need of the traffic.
 - [ ] Integrate Nexus as a docker registry -> End user dashboard
 
 # CURRENTLY, WORKING ON
-How to store promwtheus data on disk
+How to store prometheus data on disk
 prometheus alerts
 Add authentication for /metrics endpoint
 
-agent to update the prometheus file dynamically and deplot all this via terraform
+agent to update the prometheus file dynamically and deploy all this via terraform
 
-Migrate to Spot Fleet
-Install monitoring agents to analyze the memory
 Jenkins CI to create custom baked images using Packer
 
 
@@ -91,14 +92,16 @@ aws ec2 describe-subnets --filter Name=vpc-id,Values=vpc-8d6cc4f6 --query 'Subne
 
 # LINKS
 1. Run Jenkins CI on SPOT Fleet: https://www.youtube.com/watch?v=8gGItacZjps
-2. traefik: https://doc.traefik.io/traefik/routing/services/ and https://www.indivar.com/blog/how-to-setup-traefik-portainer-on-ubuntu1804/ and https://hub.docker.com/_/traefik
-3. Loki https://grafana.com/grafana/dashboards/14055 and https://grafana.com/grafana/dashboards/12611
-4. Concul: https://www.consul.io/docs/connect/observability/ui-visualization
-5. Cloudwatch spot sns: https://ec2spotworkshops.com/running_spark_apps_with_emr_on_spot_instances/tracking_spot_interruptions.html
-6. All Grafana Dashboards: https://play.grafana.org/d/000000012/grafana-play-home?orgId=1
-7. https://pinpoint-apm.github.io/pinpoint/#
-8. Grafana dashboard for different databases, mongo: 8339
-9. Alerting Rules: https://awesome-prometheus-alerts.grep.to/rules.html
+2. Loki https://grafana.com/grafana/dashboards/14055 and https://grafana.com/grafana/dashboards/12611
+3. Concul: https://www.consul.io/docs/connect/observability/ui-visualization
+4. Cloudwatch spot sns: https://ec2spotworkshops.com/running_spark_apps_with_emr_on_spot_instances/tracking_spot_interruptions.html
+5. All Grafana Dashboards: https://play.grafana.org/d/000000012/grafana-play-home?orgId=1
+6. https://pinpoint-apm.github.io/pinpoint/#
+7. Grafana dashboard for different databases, mongo: 8339
+8. Alerting Rules: https://awesome-prometheus-alerts.grep.to/rules.html
+9. Dynamic Jenkins Node provisioning: https://www.cloudbees.com/blog/how-to-install-and-run-jenkins-with-docker-compose
+10. Change jenkins logo and text: https://medium.com/@elhayefrat/replace-jenkins-logo-and-text-to-your-choice-in-jenkinsui-f7d35daed25b
+11. ELK on docker: https://github.com/deviantony/docker-elk
 
 
 # KEYPOINTS
