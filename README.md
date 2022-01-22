@@ -23,18 +23,19 @@ need of the traffic.
 # Services 
 - Single click deployment
 - Cost and Savings Dashboard
-- Deployment Rollback as needed
 - Managed Multi-region deployment
 - Managed Ops and scaling for end users
-- Email Services inbuild on application on-boarding
+- Service to decrease the volume size as needed
+- Email Services in build on application on-boarding
 - Monitoring and altering for all apps on the platform
 - Managed Database services (MySQL, Psql, and Mongo)
 - Cost Optimization as major services are hosted on SPOT
 - Webhooks for custom integrations for almost all services
 - List of all resource usage integrated right in the dashboard
-- Dashboard to view all instances, services, and service accounts
 - HA system and implemented Fail-over for almost all major services
 - Automated webhook for increasing the volume size after it reaches a threshold
+- Deployment Rollback as needed -> Possible using docker as it's independent on the infra
+- Dashboard to view all instances, services, and service accounts and a drop-view from end url (R53) to services
 
 
 # OWNER AND MAINTAINER
@@ -51,6 +52,7 @@ need of the traffic.
 - [ ] Run terraform on EC2 through ASSUME ROLE
 - [ ] Regular S3 backup of the monitoring node data
 - [ ] Open LB for all availability zones and public subnets
+- [ ] ASG not autoscaling while launch template is modified
 - [ ] Define max servers and don't exceed the max at any cost
 - [ ] Dynamic node provisioning in Jenkins for running builds
 - [ ] Add Resource limits to docker container in compose file
@@ -102,6 +104,7 @@ aws ec2 describe-subnets --filter Name=vpc-id,Values=vpc-8d6cc4f6 --query 'Subne
 9. Dynamic Jenkins Node provisioning: https://www.cloudbees.com/blog/how-to-install-and-run-jenkins-with-docker-compose
 10. Change jenkins logo and text: https://medium.com/@elhayefrat/replace-jenkins-logo-and-text-to-your-choice-in-jenkinsui-f7d35daed25b
 11. ELK on docker: https://github.com/deviantony/docker-elk
+12. Nginx proxy manager, supervisord GUI
 
 
 # KEYPOINTS
@@ -109,3 +112,13 @@ aws ec2 describe-subnets --filter Name=vpc-id,Values=vpc-8d6cc4f6 --query 'Subne
 
 
 Grafana dashboards used:
+
+
+Commands:
+aws sns confirm-subscription -> Automate the process
+aws ec2 describe-instance-type-offerings --location-type availability-zone  --filters Name=instance-type,Values=r5b.2xlarge --region us-east-1 --output table
+
+
+get all public subnet in a vpc for autoscaling
+if we are considering 2 instances, one is available in 2 az and other in 3. How to handle that condition?
+make sure all instances have a public ip address

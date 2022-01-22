@@ -33,25 +33,27 @@ class AWS(object):
             "region_name": self.aws_region
         }
 
+    @staticmethod
+    def connection_issue(client_name, e):
+        print(f"Facing issues connecting to: {client_name} client")
+        print(f"Code Exception is: {e.response['Error']['Code']}")
+        print(f"Error Message is: {e.response['Error']['Message']}")
+        print(f"Status Code is: {e.response['ResponseMetadata']['HTTPStatusCode']}")
+        sys.exit(1)
+
     def get_autoscale_client(self):
         try:
             as_client = self.session.client(self.autoscale, **self.aws_config)
             return as_client
         except ClientError as e:
-            print(f"Code Exception is: {e.response['Error']['Code']}")
-            print(f"Error Message is: {e.response['Error']['Message']}")
-            print(f"Status Code is: {e.response['ResponseMetadata']['HTTPStatusCode']}")
-            sys.exit(1)
+            self.connection_issue("Autoscaling", e)
 
     def get_ec2_client(self):
         try:
             ec2_client = self.session.client(self.ec2, **self.aws_config)
             return ec2_client
         except ClientError as e:
-            print(f"Code Exception is: {e.response['Error']['Code']}")
-            print(f"Error Message is: {e.response['Error']['Message']}")
-            print(f"Status Code is: {e.response['ResponseMetadata']['HTTPStatusCode']}")
-            sys.exit(1)
+            self.connection_issue("EC2", e)
 
 
 # <==================================================================================================>
@@ -121,24 +123,35 @@ def get_environment_details(asg_name):
 def update_instance_details(data, is_launch, environment, ipv4_address, application_name):
     application_found = False
     for index1, sc in enumerate(data["scrape_configs"]):
-        if sc.get("job_name") == "node-exporter":
+        if sc.get("job_name") == "worker-metrics":
             for index2, config in enumerate(sc["static_configs"]):
                 if config.get("labels", {}).get("environment") == environment and \
                         config.get("labels", {}).get("application") == application_name:
                     application_found = True
                     if is_launch:
-                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].append(ipv4_address)
+                        ip_list = [f"{ipv4_address}:9100", f"{ipv4_address}:8080"]
+                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].extend(ip_list)
                     else:
-                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(ipv4_address)
+                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(f"{ipv4_address}:9100")
+                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(f"{ipv4_address}:8080")
 
     if not application_found:
         new_application_payload = {
-            'job_name': 'node-exporter',
+            'job_name': 'worker-metrics',
             'metrics_path': '/metrics',
             'scheme': 'http',
+            'relabel_configs': [
+                {
+                    'action': 'replace',
+                    'replacement': '${1}',
+                    'target_label': 'instance',
+                    'regex': '([^:]+)(:[0-9]+)?',
+                    'source_labels': ['__address__']
+                }
+            ],
             'static_configs': [
                 {
-                    'targets': [ipv4_address],
+                    'targets': [f"{ipv4_address}:9100", f"{ipv4_address}:8080"],
                     'labels': {
                         'environment': environment,
                         'application': application_name,
@@ -185,7 +198,6 @@ def update_prometheus_file(data):
     if is_launch:
         environment, application_name = get_environment_details(asg_name)
         ipv4_address = get_instance_public_ip(instance_id)
-        ipv4_address = f"{ipv4_address}:9100"
         save_obj = {
             "environment": environment,
             "ipv4_address": ipv4_address,

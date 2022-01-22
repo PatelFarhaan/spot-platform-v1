@@ -1,3 +1,4 @@
+# create a multi-stage build and hardern the image
 FROM python:3.9.9-slim
 
 EXPOSE 5000

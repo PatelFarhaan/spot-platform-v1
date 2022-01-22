@@ -19,23 +19,30 @@ locals {
 
 
 // Using pre-declared module
-module "gitlab-runners-dev-us-east-1" {
+module "app-spot-platform" {
   source = "./../../tf_module"
 
-  env                         = local.config_data.env
-  tags                        = local.config_data.tags
-  ami_id                      = local.config_data.ami_id
-  vpc_id                      = local.config_data.vpc_id
-  app_name                    = local.config_data.app_name
-  subnet_ids                  = local.config_data.subnet_ids
-  aws_region                  = local.config_data.aws_region
-  ssh_key_name                = local.config_data.ssh_key_name
-  acm_certificate             = local.config_data.acm_certificate
-  spot_instance_type          = local.config_data.spot_config.instance_type
-  spot_instance_price         = local.config_data.spot_config.instance_price
-  spot_ebs_volume_size        = local.config_data.spot_config.ebs_volume_size
-  spot_asg_min_instances      = local.config_data.spot_config.auto_scaling_group.min_instances
-  spot_asg_max_instances      = local.config_data.spot_config.auto_scaling_group.max_instances
-  spot_asg_desired_instances  = local.config_data.spot_config.auto_scaling_group.desired_instances
-  spot_asg_availability_zones = local.config_data.spot_config.auto_scaling_group.availability_zones
+  env                        = local.config_data.env
+  tags                       = local.config_data.tags
+  ami_id                     = local.config_data.ami_id
+  vpc_id                     = local.config_data.vpc_id
+  app_name                   = local.config_data.app_name
+  subnet_ids                 = local.config_data.subnet_ids
+  aws_region                 = local.config_data.aws_region
+  prefix_name                = local.config_data.prefix_name
+  ssh_key_name               = local.config_data.ssh_key_name
+  ebs_volume_size            = local.config_data.ebs_volume_size
+  acm_certificate            = local.config_data.acm_certificate
+  asg_availability_zones     = local.config_data.availability_zones
+  sns_subscriptions_metadata = local.config_data.sns_subscriptions_metadata
+
+  od_instance_type         = local.config_data.od_config.instance_type
+  od_asg_min_instances     = local.config_data.od_config.auto_scaling_group.min_instances
+  od_asg_max_instances     = local.config_data.od_config.auto_scaling_group.max_instances
+  od_asg_desired_instances = local.config_data.od_config.auto_scaling_group.desired_instances
+
+  spot_instance_type         = local.config_data.spot_config.instance_type
+  spot_asg_min_instances     = local.config_data.spot_config.auto_scaling_group.min_instances
+  spot_asg_max_instances     = local.config_data.spot_config.auto_scaling_group.max_instances
+  spot_asg_desired_instances = local.config_data.spot_config.auto_scaling_group.desired_instances
 }

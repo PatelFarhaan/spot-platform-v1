@@ -1,4 +1,6 @@
 // Add this file to /etc/docker/daemon.json
+
+// Make sure to first run loki container before creating this file
 {
     "log-driver": "loki",
     "log-opts": {

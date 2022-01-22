@@ -37,7 +37,7 @@ services:
   grafana:
     image: grafana/grafana
     container_name: "grafana"
-    user: "1000"
+    user: root
     volumes:
       - /home/ubuntu/docker_data/grafana:/var/lib/grafana
     environment:
@@ -177,5 +177,25 @@ services:
       - SEMAPHORE_ADMIN_NAME=Your Name
       - SEMAPHORE_ADMIN_PASSWORD="Monitoring"
       - SEMAPHORE_PLAYBOOK_PATH=/etc/semaphore
+    networks:
+      - monitoring
+
+  fortio:
+    image: istio/fortio
+    container_name: fortio
+    ports:
+      - "8078:8081"
+    networks:
+        - monitoring
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - /home/ubuntu/docker_data/nginx:/etc/nginx/conf.d
+      - /home/ubuntu/docker_data/nginx/logs:/var/log/nginx
     networks:
       - monitoring

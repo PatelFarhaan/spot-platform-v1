@@ -22,4 +22,7 @@ build {
   sources = [
     "source.amazon-ebs.ubuntu"
   ]
+  provisioner "shell" {
+    script      = "script.sh"
+  }
 }
