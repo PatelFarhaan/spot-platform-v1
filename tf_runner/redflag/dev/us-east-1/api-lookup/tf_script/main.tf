@@ -20,7 +20,7 @@ locals {
 
 // Using pre-declared module
 module "app-spot-platform" {
-  source = "./../../tf_module"
+  source = "./..//../../../../../tf_module"
 
   env                        = local.config_data.env
   tags                       = local.config_data.tags
@@ -35,6 +35,8 @@ module "app-spot-platform" {
   acm_certificate            = local.config_data.acm_certificate
   asg_availability_zones     = local.config_data.availability_zones
   sns_subscriptions_metadata = local.config_data.sns_subscriptions_metadata
+  alb_security_group         = local.config_data.security_groups.alb.ingress
+  instance_security_group    = local.config_data.security_groups.instance.ingress
 
   od_instance_type         = local.config_data.od_config.instance_type
   od_asg_min_instances     = local.config_data.od_config.auto_scaling_group.min_instances

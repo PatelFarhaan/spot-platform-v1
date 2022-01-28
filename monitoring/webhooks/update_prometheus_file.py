@@ -225,7 +225,9 @@ def update_prometheus_file(data):
 # <==================================================================================================>
 @app.route("/webhook/instance-modification", methods=["POST"])
 def sns_notification():
+    print(request.data)
     data = json.loads(request.get_data())
+    print(f"Data -> {data}")
     update_prometheus_file(data)
     reload_prometheus()
     return jsonify({}), 200

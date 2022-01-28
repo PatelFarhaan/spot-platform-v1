@@ -49,6 +49,7 @@ need of the traffic.
 - [ ] Certificate expire and renew alters
 - [ ] Support multiple instances for SPOT
 - [ ] Create and manage the ACM accordingly
+- [ ] Locust.io for load testing on medium.com
 - [ ] Run terraform on EC2 through ASSUME ROLE
 - [ ] Regular S3 backup of the monitoring node data
 - [ ] Open LB for all availability zones and public subnets
@@ -117,8 +118,12 @@ Grafana dashboards used:
 Commands:
 aws sns confirm-subscription -> Automate the process
 aws ec2 describe-instance-type-offerings --location-type availability-zone  --filters Name=instance-type,Values=r5b.2xlarge --region us-east-1 --output table
+ec2-instance-selector --vcpus 8 --memory=32  --usage-class spot  --cpu-architecture x86_64 --region us-east-1 -o table
 
 
 get all public subnet in a vpc for autoscaling
 if we are considering 2 instances, one is available in 2 az and other in 3. How to handle that condition?
 make sure all instances have a public ip address
+
+
+get all resources in private zone

@@ -25,7 +25,11 @@ variable "acm_certificate" {}
 
 variable "ebs_volume_size" {}
 
+variable "alb_security_group" {}
+
 variable "asg_availability_zones" {}
+
+variable "instance_security_group" {}
 
 variable "sns_subscriptions_metadata" {
   type = list(map(string))
@@ -50,3 +54,4 @@ variable "od_asg_min_instances" {}
 variable "od_asg_max_instances" {}
 
 variable "od_asg_desired_instances" {}
+

@@ -17,23 +17,18 @@ resource "aws_alb" "load_balancer" {
 // Create the LB security group
 resource "aws_security_group" "alb_security_group" {
   vpc_id      = var.vpc_id
-  name        = "alb-security-group-tf"
+  name        = "${var.app_name}-alb-tf"
   description = "Allow all inbound traffic on port 80 and 443"
 
-  ingress {
-    description = "HTTP from VPC"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "TLS from VPC"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  dynamic "ingress" {
+    for_each = var.alb_security_group
+    content {
+      to_port          = lookup(ingress.value, "to_port")
+      protocol         = lookup(ingress.value, "protocol")
+      from_port        = lookup(ingress.value, "from_port")
+      description      = lookup(ingress.value, "description")
+      cidr_blocks      = lookup(ingress.value, "cidr_blocks")
+    }
   }
 
   egress {
@@ -44,7 +39,7 @@ resource "aws_security_group" "alb_security_group" {
   }
 
   tags = merge(var.tags, {
-    Name = "alb-security-group-tf"
+    Name = "${var.app_name}-alb-tf"
   })
 }
 
@@ -52,8 +47,19 @@ resource "aws_security_group" "alb_security_group" {
 // Create the instance security group
 resource "aws_security_group" "instance_security_group" {
   vpc_id      = var.vpc_id
-  name        = "instance-security-group-tf"
+  name        = "${var.app_name}-instance-tf"
   description = "Allow all traffic from load balancer"
+
+  dynamic "ingress" {
+    for_each = var.instance_security_group
+    content {
+      to_port          = lookup(ingress.value, "to_port")
+      protocol         = lookup(ingress.value, "protocol")
+      from_port        = lookup(ingress.value, "from_port")
+      description      = lookup(ingress.value, "description")
+      cidr_blocks      = lookup(ingress.value, "cidr_blocks")
+    }
+  }
 
   ingress {
     description     = "HTTP"
@@ -63,38 +69,6 @@ resource "aws_security_group" "instance_security_group" {
     security_groups = [aws_security_group.alb_security_group.id]
   }
 
-  ingress {
-    description = "Node Exporter"
-    from_port   = 9100
-    to_port     = 9100
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Cadvisor"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Open to world"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -103,7 +77,7 @@ resource "aws_security_group" "instance_security_group" {
   }
 
   tags = merge(var.tags, {
-    Name = "instance-security-group-tf"
+    Name = "${var.app_name}-instance-tf"
   })
 }
 

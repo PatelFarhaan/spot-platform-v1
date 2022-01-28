@@ -30,6 +30,10 @@ resource "aws_launch_template" "spot_launch_template" {
     }
   }
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tag_specifications {
     resource_type = "instance"
 
