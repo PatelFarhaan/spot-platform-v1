@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+    stages {
+        stage("Update AMI in config file") {
+            steps {
+                sh """
+                contents="$(jq '.ami_id = "${params.ami_id}"' config.json)"
+                echo $contents > config.json
+                """
+            }
+        }
+
+        stage("Pull TF state from S3") {
+            steps {
+                sh """
+                echo "Executing AWS S3 cli command here"
+                """
+            }
+        }
+
+        stage("Terraform Validate") {
+            steps {
+                sh """
+                cd tf_script
+                terraform validate
+                """
+            }
+        }
+
+        stage("Terraform Apply: Teardown existing instances") {
+            steps {
+                sh """
+                cd tf_script
+                terraform apply -auto-approve
+                """
+            }
+        }
+
+        stage("Terraform Apply: Deploy new AMI") {
+            steps {
+                sh """
+                cd tf_script
+                terraform apply -auto-approve
+                """
+            }
+        }
+
+        stage("Push TF state to S3") {
+            steps {
+                sh """
+                echo "Executing AWS S3 cli command here"
+                """
+            }
+        }
+    }
+}
