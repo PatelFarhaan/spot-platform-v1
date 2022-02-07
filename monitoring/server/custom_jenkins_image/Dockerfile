@@ -29,3 +29,4 @@ RUN git config --global user.email "redflagAutomationUser@***REMOVED***" \
 RUN git config --global user.name "redflagAutomationUser"
 
 # Place the .ssh pem file or download it from s3
+# install terraform

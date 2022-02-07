@@ -1,11 +1,17 @@
 pipeline {
     agent any
+
+    environment {
+        jenkins_filepath="tf_runner/redflag/dev/us-east-1/media-lookup"
+    }
+
     stages {
         stage("Update AMI in config file") {
             steps {
                 script {
                     sh """
-                    contents="\$(jq '.ami_id = "\${params.ami_id}"' config.json)"
+                    cd "${env.jenkins_filepath}"
+                    contents="\$(jq '.ami_id = "${params.ami_id}"' config.json)"
                     echo \$contents > config.json
                     """
                 }
@@ -22,11 +28,22 @@ pipeline {
             }
         }
 
+        stage("Terraform Init") {
+            steps {
+                script {
+                    sh """
+                    cd "${env.jenkins_filepath}/tf_script"
+                    terraform init
+                    """
+                }
+            }
+        }
+
         stage("Terraform Validate") {
             steps {
                 script {
                     sh """
-                    cd tf_script
+                    cd "${env.jenkins_filepath}/tf_script"
                     terraform validate
                     """
                 }
@@ -37,7 +54,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    cd tf_script
+                    cd "${env.jenkins_filepath}/tf_script"
                     terraform apply -auto-approve
                     """
                 }
@@ -48,7 +65,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    cd tf_script
+                    cd "${env.jenkins_filepath}/tf_script"
                     terraform apply -auto-approve
                     """
                 }
