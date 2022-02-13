@@ -2,9 +2,9 @@
 resource "aws_autoscaling_group" "spot_autoscaling_group" {
   vpc_zone_identifier  = var.subnet_ids
   name_prefix          = var.prefix_name
+  termination_policies = ["NewestInstance"]
   min_size             = var.spot_asg_min_instances
   max_size             = var.spot_asg_max_instances
-  termination_policies = ["ClosestToNextInstanceHour"]
   desired_capacity     = var.spot_asg_desired_instances
   target_group_arns    = [aws_alb_target_group.alb_target_group.arn]
 
