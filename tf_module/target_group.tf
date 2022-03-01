@@ -11,10 +11,10 @@ resource "aws_alb_target_group" "alb_target_group" {
   }
 
   health_check {
-    unhealthy_threshold = 2
-    healthy_threshold   = 5
-    timeout             = 2
-    interval            = 5
+    unhealthy_threshold = 10
+    healthy_threshold   = 2
+    timeout             = 120
+    interval            = 300
     enabled             = true
     protocol            = "HTTP"
     path                = "/ping"
