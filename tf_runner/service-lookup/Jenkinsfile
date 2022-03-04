@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        jenkins_filepath="tf_runner/api-lookup"
+        jenkins_filepath="tf_runner/service-lookup"
     }
 
     stages {

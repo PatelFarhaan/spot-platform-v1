@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        jenkins_filepath="tf_runner/redflag/dev/us-east-1/media-lookup"
+        jenkins_filepath="tf_runner/media-lookup"
     }
 
     stages {
