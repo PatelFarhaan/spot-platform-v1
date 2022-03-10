@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        jenkins_filepath="scripts/load_testing/service_lookup"
+        service=${params.SERVICE}
+        jenkins_filepath="scripts/load_testing/"
     }
 
     stages {
@@ -10,7 +11,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    cd "${env.jenkins_filepath}"
+                    cd "${env.jenkins_filepath}/${service}"
                     virtualenv venv
                     """
                 }
@@ -21,7 +22,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    cd "${env.jenkins_filepath}"
+                    cd "${env.jenkins_filepath}/${service}"
                     . venv/bin/activate
                     pip3 install -r requirements.txt
                     """
@@ -33,7 +34,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    cd "${env.jenkins_filepath}"
+                    cd "${env.jenkins_filepath}/${service}"
                     . venv/bin/activate
                     python3 main.py
                     """
