@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        service=${params.SERVICE}
+        service="${params.SERVICE}"
         jenkins_filepath="scripts/load_testing/"
     }
 
