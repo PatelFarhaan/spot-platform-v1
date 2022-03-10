@@ -7,12 +7,6 @@ pipeline {
     }
 
     stages {
-        stage("Cleanup") {
-            steps {
-                deleteDir()
-            }
-        }
-
         stage("Creating virtual environment") {
             steps {
                 script {
@@ -56,6 +50,12 @@ pipeline {
                     echo "Here are the test results"
                     """
                 }
+            }
+        }
+
+        stage("Cleanup") {
+            steps {
+                deleteDir()
             }
         }
     }
