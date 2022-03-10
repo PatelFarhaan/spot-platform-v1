@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    environment {
+        jenkins_filepath="scripts/load_testing/service_lookup/Jenkinsfile"
+    }
+
+    stages {
+        stage("Creating virtual environment") {
+            steps {
+                script {
+                    sh """
+                    cd "${env.jenkins_filepath}"
+                    virtualenv venv
+                    """
+                }
+            }
+        }
+
+        stage("Installing requirements") {
+            steps {
+                script {
+                    sh """
+                    pip3 install requirements.txt
+                    """
+                }
+            }
+        }
+
+        stage("Running test cases") {
+            steps {
+                script {
+                    sh """
+                    . venv/bin/activate
+                    python3 main.py
+                    """
+                }
+            }
+        }
+    }
+}

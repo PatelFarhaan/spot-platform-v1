@@ -31,8 +31,8 @@ resource "aws_autoscaling_group" "spot_autoscaling_group" {
     }
   }
 
-  health_check_grace_period = 30
-  default_cooldown          = 15
+  health_check_grace_period = 15
+  default_cooldown          = 120
   capacity_rebalance        = true
   health_check_type         = "EC2"
 
