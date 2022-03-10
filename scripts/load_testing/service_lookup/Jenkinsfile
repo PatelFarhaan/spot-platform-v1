@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        jenkins_filepath="scripts/load_testing/service_lookup/Jenkinsfile"
+        jenkins_filepath="scripts/load_testing/service_lookup"
     }
 
     stages {
