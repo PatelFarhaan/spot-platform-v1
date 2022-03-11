@@ -6,6 +6,7 @@ import socket
 import urllib3
 import requests
 import threading
+from datetime import datetime
 
 
 def worker(term, site, url, headers):
@@ -204,9 +205,10 @@ def main():
 if __name__ == '__main__':
     url = os.getenv("URL")
     original_stdout = sys.stdout
-    file_simple = 'simpleLogs.txt'
-    file_complete = 'completeLogs.txt'
     api_token = os.getenv("API_TOKEN")
+    current_dt = str(datetime.utcnow())
+    file_simple = f'{current_dt}-simpleLogs.txt'
+    file_complete = f'{current_dt}-completeLogs.txt'
     concurrent_threads = int(os.getenv("CONCURRENT_THREADS"))
     urls_list = []
     exec_list = []

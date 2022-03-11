@@ -6,6 +6,7 @@ import socket
 import urllib3
 import requests
 import threading
+from datetime import datetime
 
 
 def worker_medialookup(site, url, headers):
@@ -391,9 +392,10 @@ def main():
 
 if __name__ == '__main__':
     concurrent_threads = int(os.getenv("CONCURRENT_THREADS"))
+    current_dt = str(datetime.utcnow())
     api_token = os.getenv("API_TOKEN")
-    file_complete = 'completeLogs.txt'
-    file_simple = 'simpleLogs.txt'
+    file_complete = f'{current_dt}-completeLogs.txt'
+    file_simple = f'{current_dt}-simpleLogs.txt'
     original_stdout = sys.stdout
     url = os.getenv("URL")
     positives_list = []
