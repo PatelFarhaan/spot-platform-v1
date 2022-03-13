@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         jenkins_filepath="tf_runner/api-lookup"
+        s3_bucket_name="spot-platform/redflag-api-lookup-prod"
     }
 
     stages {
@@ -22,7 +23,8 @@ pipeline {
             steps {
                 script {
                     sh """
-                    echo "Executing AWS S3 cli command here"
+                    cd "${env.jenkins_filepath}"
+                    aws s3 cp "s3://${s3_bucket_name}/terraform.tfstate" ./tf_script --profile=farhaan --region=us-east-1
                     """
                 }
             }
@@ -106,7 +108,8 @@ pipeline {
             steps {
                 script {
                     sh """
-                    echo "Executing AWS S3 cli command here"
+                    cd "${env.jenkins_filepath}"
+                    aws s3 cp ./tf_script/terraform.tfstate "s3://${s3_bucket_name}/" --profile=farhaan --region=us-east-1
                     """
                 }
             }
