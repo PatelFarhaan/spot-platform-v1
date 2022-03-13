@@ -52,53 +52,13 @@ pipeline {
             }
         }
 
-        stage("Teardown existing instances") {
+        stage("Terraform Apply") {
             steps {
                 script {
                     sh """
-                    cd "${env.jenkins_filepath}"
-                    contents="\$(jq '.spot_config.auto_scaling_group.desired_instances = 0' config.json)"
-                    echo \$contents > config.json
-
+                    cd "${env.jenkins_filepath}/tf_script"
                     export AWS_PROFILE=farhaan
-                    cd "tf_script"
                     terraform apply -auto-approve
-                    """
-                }
-            }
-        }
-
-        stage("Cool Down Period") {
-            steps {
-                script {
-                    sh """
-                    sleep 60
-                    """
-                }
-            }
-        }
-
-        stage("Terraform Apply: Deploy new AMI") {
-            steps {
-                script {
-                    sh """
-                    cd "${env.jenkins_filepath}"
-                    contents="\$(jq '.spot_config.auto_scaling_group.desired_instances = 3' config.json)"
-                    echo \$contents > config.json
-
-                    export AWS_PROFILE=farhaan
-                    cd "tf_script"
-                    terraform apply -auto-approve
-                    """
-                }
-            }
-        }
-
-        stage("Warm Up Period") {
-            steps {
-                script {
-                    sh """
-                    sleep 60
                     """
                 }
             }
