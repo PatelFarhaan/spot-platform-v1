@@ -17,8 +17,8 @@ resource "aws_autoscaling_group" "spot_autoscaling_group" {
 
     launch_template {
       launch_template_specification {
-        version            = "$Latest"
         launch_template_id = aws_launch_template.spot_launch_template.id
+        version            = aws_launch_template.spot_launch_template.latest_version
       }
 
       dynamic override {
@@ -55,7 +55,8 @@ resource "aws_autoscaling_group" "spot_autoscaling_group" {
     value               = value
     propagate_at_launch = true
   }
-  ], [
+  ],
+  [
     {
       key                 = "Name"
       value               = "spot-${var.app_name}"

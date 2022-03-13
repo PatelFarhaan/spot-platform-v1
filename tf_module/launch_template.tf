@@ -36,13 +36,11 @@ resource "aws_launch_template" "spot_launch_template" {
 
   tag_specifications {
     resource_type = "instance"
-
     tags = var.tags
   }
 
   tag_specifications {
     resource_type = "volume"
-
     tags = var.tags
   }
 }
