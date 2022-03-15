@@ -17,7 +17,7 @@ pipeline {
             steps {
                 checkout([$class: 'GitSCM', branches: [[name: '*/master']],
                 doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
-                userRemoteConfigs: [[credentialsId: 'RedfladAutomationUser', url: 'https://github.com/PatelFarhaan/spot_platform.git']]])
+                userRemoteConfigs: [[credentialsId: 'spotPlatform', url: 'https://github.com/PatelFarhaan/spot_platform.git']]])
                 sh "ls -lart ./*"
             }
         }
