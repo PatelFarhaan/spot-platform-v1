@@ -16,6 +16,10 @@ RUN pip3 install boto3
 
 RUN apt install sudo
 
+RUN pip3 install requests
+
+RUN pip3 install python-dateutil
+
 RUN apt update && apt install -y lsb-release && apt-get clean all
 
 RUN sudo apt install software-properties-common -y

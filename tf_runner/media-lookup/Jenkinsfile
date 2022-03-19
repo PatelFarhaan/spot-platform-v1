@@ -2,19 +2,32 @@ pipeline {
     agent any
 
     environment {
+        tear_down="${params.tear_down}"
+        aws_profile_name="spot-platform"
         jenkins_filepath="tf_runner/media-lookup"
+        ami_name = 'redflag-service-medialookup-packer-spot'
         s3_bucket_name="spot-platform/redflag-media-lookup-prod"
     }
 
     stages {
-        stage("Update AMI in config file") {
+        stage("Updating config file") {
             steps {
                 script {
-                    sh """
-                    cd "${env.jenkins_filepath}"
-                    contents="\$(jq '.ami_id = "${params.ami_id}"' config.json)"
-                    echo \$contents > config.json
-                    """
+                    if ("${tear_down}" == "true") {
+                        sh """
+                        ami_id=\$(aws ec2 describe-images --profile=${aws_profile_name} --region=us-east-1 --filters '[{\"Name\": \"name\", \"Values\": [\"$ami_name\"]}]' | jq -r '.Images[0].ImageId')
+                        cd "${env.jenkins_filepath}"
+                        contents="\$(jq '.spot_config.auto_scaling_group.desired_instances = 0 | .ami_id = \"${ami_id}\"' config.json)"
+                        echo \$contents > config.json
+                        """
+                    }
+                    else {
+                        sh """
+                        cd "${env.jenkins_filepath}"
+                        contents="\$(jq '.ami_id = "${params.ami_id}"' config.json)"
+                        echo \$contents > config.json
+                        """
+                    }
                 }
             }
         }
@@ -24,7 +37,7 @@ pipeline {
                 script {
                     sh """
                     cd "${env.jenkins_filepath}"
-                    aws s3 cp "s3://${s3_bucket_name}/terraform.tfstate" ./tf_script --profile=spot-platform --region=us-east-1
+                    aws s3 cp "s3://${s3_bucket_name}/terraform.tfstate" ./tf_script --profile=${aws_profile_name} --region=us-east-1
                     """
                 }
             }
@@ -57,7 +70,7 @@ pipeline {
                 script {
                     sh """
                     cd "${env.jenkins_filepath}/tf_script"
-                    export AWS_PROFILE=farhaan
+                    export AWS_PROFILE=${aws_profile_name}
                     terraform apply -auto-approve
                     """
                 }
@@ -69,7 +82,7 @@ pipeline {
                 script {
                     sh """
                     cd "${env.jenkins_filepath}"
-                    aws s3 cp ./tf_script/terraform.tfstate "s3://${s3_bucket_name}/" --profile=spot-platform --region=us-east-1
+                    aws s3 cp ./tf_script/terraform.tfstate "s3://${s3_bucket_name}/" --profile=${aws_profile_name} --region=us-east-1
                     """
                 }
             }
