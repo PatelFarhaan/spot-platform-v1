@@ -24,7 +24,7 @@ pipeline {
                 script {
                     sh """
                     cd "${env.jenkins_filepath}"
-                    aws s3 cp "s3://${s3_bucket_name}/terraform.tfstate" ./tf_script --profile=farhaan --region=us-east-1
+                    aws s3 cp "s3://${s3_bucket_name}/terraform.tfstate" ./tf_script --profile=spot-platform --region=us-east-1
                     """
                 }
             }
@@ -69,7 +69,7 @@ pipeline {
                 script {
                     sh """
                     cd "${env.jenkins_filepath}"
-                    aws s3 cp ./tf_script/terraform.tfstate "s3://${s3_bucket_name}/" --profile=farhaan --region=us-east-1
+                    aws s3 cp ./tf_script/terraform.tfstate "s3://${s3_bucket_name}/" --profile=spot-platform --region=us-east-1
                     """
                 }
             }

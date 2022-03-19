@@ -4,40 +4,35 @@ alerting:
         - targets: null
 global:
   evaluation_interval: 30s
-  scrape_timeout: 10s
   scrape_interval: 30s
+  scrape_timeout: 10s
 rule_files: null
 scrape_configs:
   - job_name: master-metrics
     metrics_path: /metrics
+    relabel_configs:
+      - action: replace
+        regex: ([^:]+)(:[0-9]+)?
+        replacement: ${1}
+        source_labels:
+          - __address__
+        target_label: instance
     scheme: http
     static_configs:
-      - targets:
+      - labels:
+          application: monitoring-control-plane
+          environment: development
+        targets:
           - cadvisor:8080
           - node_exporter:9100
-        labels:
-          environment: development
-          application: monitoring-control-plane
-    relabel_configs:
-      - source_labels: [__address__]
-        action: replace
-        regex: '([^:]+)(:[0-9]+)?'
-        replacement: ${1}
-        target_label: instance
-
   - job_name: worker-metrics
     metrics_path: /metrics
-    scheme: http
-    static_configs:
-      - targets:
-          - 3.237.71.223:9100
-          - 3.237.71.223:8080
-        labels:
-          environment: development
-          application: r-service-lookup-spot
     relabel_configs:
-      - source_labels: [__address__]
-        action: replace
-        regex: '([^:]+)(:[0-9]+)?'
+      - action: replace
+        regex: ([^:]+)(:[0-9]+)?
         replacement: ${1}
+        source_labels:
+          - __address__
         target_label: instance
+    scheme: http
+    static_configs: []

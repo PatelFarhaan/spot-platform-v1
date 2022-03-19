@@ -8,7 +8,6 @@ import yaml
 import boto3
 import requests
 from pprint import pprint
-from flask_crontab import Crontab
 from flask import Flask, request, jsonify
 from botocore.exceptions import ClientError
 
@@ -17,7 +16,6 @@ from botocore.exceptions import ClientError
 #                                          FLASK CONFIG
 # <==================================================================================================>
 app = Flask(__name__)
-crontab = Crontab(app)
 
 
 # <==================================================================================================>
@@ -121,46 +119,40 @@ def get_environment_details(asg_name):
 #                                  UPDATE INSTANCE DETAILS IN PROMETHEUS
 # <==================================================================================================>
 def update_instance_details(data, is_launch, environment, ipv4_address, application_name):
-    application_found = False
     for index1, sc in enumerate(data["scrape_configs"]):
         if sc.get("job_name") == "worker-metrics":
             for index2, config in enumerate(sc["static_configs"]):
                 if config.get("labels", {}).get("environment") == environment and \
                         config.get("labels", {}).get("application") == application_name:
-                    application_found = True
+                    print("here")
                     if is_launch:
-                        ip_list = [f"{ipv4_address}:9100", f"{ipv4_address}:8080"]
-                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].extend(ip_list)
+                        if f"{ipv4_address}:9100" in data["scrape_configs"][index1]["static_configs"][index2]["targets"]:
+                            return
+                        else:
+                            ip_list = [f"{ipv4_address}:9100", f"{ipv4_address}:8080"]
+                            data["scrape_configs"][index1]["static_configs"][index2]["targets"].extend(ip_list)
+                            return
                     else:
-                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(f"{ipv4_address}:9100")
-                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(f"{ipv4_address}:8080")
+                        if f"{ipv4_address}:9100" not in data["scrape_configs"][index1]["static_configs"][index2]["targets"]:
+                            return
+                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(
+                            f"{ipv4_address}:9100")
+                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(
+                            f"{ipv4_address}:8080")
+                        return
 
-    if not application_found:
-        new_application_payload = {
-            'job_name': 'worker-metrics',
-            'metrics_path': '/metrics',
-            'scheme': 'http',
-            'relabel_configs': [
-                {
-                    'action': 'replace',
-                    'replacement': '${1}',
-                    'target_label': 'instance',
-                    'regex': '([^:]+)(:[0-9]+)?',
-                    'source_labels': ['__address__']
-                }
-            ],
-            'static_configs': [
-                {
-                    'targets': [f"{ipv4_address}:9100", f"{ipv4_address}:8080"],
-                    'labels': {
-                        'environment': environment,
+            new_app_entry = {
+                'labels':
+                    {
                         'application': application_name,
-                    }
-                }
-            ]
-        }
-        data["scrape_configs"].append(new_application_payload)
-    return data
+                        'environment': environment
+                    },
+                'targets': [
+                    f"{ipv4_address}:9100",
+                    f"{ipv4_address}:8080"
+                ]
+            }
+            sc["static_configs"].append(new_app_entry)
 
 
 # <==================================================================================================>
@@ -264,14 +256,6 @@ def save_json(filename, data):
         json.dump(data, outfile, indent=4)
 
 
-# # <==================================================================================================>
-# #                                          CHECK ALL SERVER MANUALLY
-# # <==================================================================================================>
-# @crontab.job(minute="30")
-# def my_scheduled_job():
-#     do_something()
-
-
 # <==================================================================================================>
 #                                         MAIN FUNCTION
 # <==================================================================================================>
@@ -281,5 +265,4 @@ if __name__ == '__main__':
     prometheus_file_name = "/application/data/prometheus.yml"
     app.run(host="0.0.0.0", port=5000)
 
-# Todo: set a flask cron job to check the data every 30 mins
-# Todo: have a alert on null data
+# run a clean up job every night to remove/add all latest instances
