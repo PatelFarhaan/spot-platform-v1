@@ -7,6 +7,7 @@ import json
 import yaml
 import boto3
 import requests
+from pprint import pprint
 from flask_crontab import Crontab
 from flask import Flask, request, jsonify
 from botocore.exceptions import ClientError
@@ -61,10 +62,9 @@ class AWS(object):
 # <==================================================================================================>
 def is_instance_launching(data):
     message = json.loads(data["Message"])
-    detail = message.get("detail")
-    description = detail.get("Description")
-    instance_id = detail.get("EC2InstanceId")
-    asg_name = detail.get("AutoScalingGroupName")
+    description = message.get("Description")
+    instance_id = message.get("EC2InstanceId")
+    asg_name = message.get("AutoScalingGroupName")
 
     if description.startswith("Terminating EC2 instance"):
         return False, instance_id, asg_name
@@ -225,9 +225,8 @@ def update_prometheus_file(data):
 # <==================================================================================================>
 @app.route("/webhook/instance-modification", methods=["POST"])
 def sns_notification():
-    print(request.data)
     data = json.loads(request.get_data())
-    print(f"Data -> {data}")
+    pprint(f"\n\nData -> {data}\n\n")
     update_prometheus_file(data)
     reload_prometheus()
     return jsonify({}), 200

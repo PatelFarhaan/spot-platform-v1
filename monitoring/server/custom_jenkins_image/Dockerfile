@@ -26,9 +26,18 @@ RUN apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(ls
 
 RUN sudo apt-get update && sudo apt-get install packer
 
-RUN git config --global user.email "redflagAutomationUser@***REMOVED***" \
+RUN git config --global user.email "redflagAutomationUser@***REMOVED***"
 
 RUN git config --global user.name "redflagAutomationUser"
 
-# Place the .ssh pem file or download it from s3
-# install terraform
+RUN mkdir /root/.aws
+
+COPY credentials /root/.aws/credentials
+
+RUN apt install -y gnupg software-properties-common curl
+
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+
+RUN apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+
+RUN apt update && apt install terraform
