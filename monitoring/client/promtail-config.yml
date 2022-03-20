@@ -18,6 +18,7 @@ scrape_configs:
           node: worker
           environment: '${ENV}'
           instance: '${HOSTNAME}'
+          application: '${APPLICATION}'
           __path__: /var/log/nginx/*log
   - job_name: supervisor
     static_configs:
@@ -28,6 +29,7 @@ scrape_configs:
           job: supervisor
           environment: '${ENV}'
           instance: '${HOSTNAME}'
+          application: '${APPLICATION}'
           __path__: /var/log/supervisor/*log
   - job_name: varlogs
     static_configs:
@@ -39,6 +41,7 @@ scrape_configs:
           environment: '${ENV}'
           instance: '${HOSTNAME}'
           __path__: /var/log/*log
+          application: '${APPLICATION}'
   - job_name: docker
     pipeline_stages:
       - docker: { }
@@ -48,4 +51,5 @@ scrape_configs:
           node: worker
           environment: '${ENV}'
           instance: '${HOSTNAME}'
+          application: '${APPLICATION}'
           __path__: /var/lib/docker/containers/*/*-json.log
