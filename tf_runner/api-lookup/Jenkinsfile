@@ -2,12 +2,13 @@ pipeline {
     agent any
 
     environment {
+        aws_region="us-east-1"
         tear_down="${params.tear_down}"
         aws_profile_name="spot-platform"
         jenkins_filepath="tf_runner/api-lookup"
         ami_name = 'redflag-service-apilookup-packer-spot'
         s3_bucket_name="spot-platform/redflag-api-lookup-prod"
-        def ami_id = sh(script: "aws ec2 describe-images --profile=${aws_profile_name} --region=us-east-1 --filters '[{\"Name\": \"name\", \"Values\": [\"$ami_name\"]}]' | jq -r '.Images[0].ImageId'", returnStdout: true).trim()
+        def ami_id = sh(script: "aws ec2 describe-images --profile=${aws_profile_name} --region=\"$aws_region\" --filters '[{\"Name\": \"name\", \"Values\": [\"$ami_name\"]}]' | jq -r '.Images[0].ImageId'", returnStdout: true).trim()
     }
 
     stages {
@@ -16,7 +17,6 @@ pipeline {
                 script {
                     if ("${tear_down}" == "true") {
                     	sh """
-                    	echo ${env.ami_id}
 	                    cd ${env.jenkins_filepath}
 	                    contents="\$(jq '.spot_config.auto_scaling_group.desired_instances = 0 | .ami_id = "${env.ami_id}"' config.json)"
 	                    echo \$contents > config.json
@@ -47,7 +47,7 @@ pipeline {
                 script {
                     sh """
                     cd "${env.jenkins_filepath}"
-                    aws s3 cp "s3://${s3_bucket_name}/terraform.tfstate" ./tf_script --profile=${aws_profile_name} --region=us-east-1
+                    aws s3 cp "s3://${env.s3_bucket_name}/terraform.tfstate" ./tf_script --profile=${env.aws_profile_name} --region=${env.aws_region}
                     """
                 }
             }
@@ -80,7 +80,7 @@ pipeline {
                 script {
                     sh """
                     cd "${env.jenkins_filepath}/tf_script"
-                    export AWS_PROFILE=${aws_profile_name}
+                    export AWS_PROFILE=${env.aws_profile_name}
                     terraform apply -auto-approve
                     """
                 }
@@ -92,7 +92,7 @@ pipeline {
                 script {
                     sh """
                     cd "${env.jenkins_filepath}"
-                    aws s3 cp ./tf_script/terraform.tfstate "s3://${s3_bucket_name}/" --profile=${aws_profile_name} --region=us-east-1
+                    aws s3 cp ./tf_script/terraform.tfstate "s3://${s3_bucket_name}/" --profile=${aws_profile_name} --region=${env.aws_region}
                     """
                 }
             }
