@@ -8,6 +8,8 @@ pipeline {
         jenkins_filepath="tf_runner/service-lookup"
         ami_name = 'redflag-service-lookup-packer-spot'
         s3_bucket_name="spot-platform/redflag-service-lookup-prod"
+        def ami_id = sh(script: "aws ec2 describe-images --profile=${aws_profile_name} --region=\"$aws_region\" --filters '[{\"Name\": \"name\", \"Values\": [\"$ami_name\"]}]' | jq -r '.Images[0].ImageId'", returnStdout: true).trim()
+
     }
 
     stages {
