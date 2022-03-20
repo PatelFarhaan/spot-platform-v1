@@ -23,11 +23,20 @@ pipeline {
 	                    """
                     }
                     else {
-                        sh """
-                        cd ${env.jenkins_filepath}
-                        contents="\$(jq '.ami_id = "${params.ami_id}"' config.json)"
-                        echo \$contents > config.json
-                        """
+                        if ("${params.ami_id}" == "default"){
+                            sh """
+                            cd ${env.jenkins_filepath}
+                            contents="\$(jq '.ami_id = "${env.ami_id}"' config.json)"
+                            echo \$contents > config.json
+                            """
+                        }
+                        else {
+                            sh """
+                            cd ${env.jenkins_filepath}
+                            contents="\$(jq '.ami_id = "${params.ami_id}"' config.json)"
+                            echo \$contents > config.json
+                            """
+                        }
                     }
                 }
             }
