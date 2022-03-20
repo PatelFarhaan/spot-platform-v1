@@ -7,6 +7,7 @@ pipeline {
         jenkins_filepath="tf_runner/api-lookup"
         ami_name = 'redflag-service-apilookup-packer-spot'
         s3_bucket_name="spot-platform/redflag-api-lookup-prod"
+        def ami_id = sh(script: "aws ec2 describe-images --profile=${aws_profile_name} --region=us-east-1 --filters '[{\"Name\": \"name\", \"Values\": [\"$ami_name\"]}]' | jq -r '.Images[0].ImageId'", returnStdout: true).trim()
     }
 
     stages {
@@ -14,16 +15,16 @@ pipeline {
             steps {
                 script {
                     if ("${tear_down}" == "true") {
-                        sh """
-                        ami_id=\$(aws ec2 describe-images --profile=${aws_profile_name} --region=us-east-1 --filters '[{\"Name\": \"name\", \"Values\": [\"$ami_name\"]}]' | jq -r '.Images[0].ImageId')
-                        cd "${env.jenkins_filepath}"
-                        contents="\$(jq '.spot_config.auto_scaling_group.desired_instances = 0 | .ami_id = \"${ami_id}\"' config.json)"
-                        echo \$contents > config.json
-                        """
+                    	sh """
+                    	echo ${env.ami_id}
+	                    cd ${env.jenkins_filepath}
+	                    contents="\$(jq '.spot_config.auto_scaling_group.desired_instances = 0 | .ami_id = "${env.ami_id}"' config.json)"
+	                    echo \$contents > config.json
+	                    """
                     }
                     else {
                         sh """
-                        cd "${env.jenkins_filepath}"
+                        cd ${env.jenkins_filepath}
                         contents="\$(jq '.ami_id = "${params.ami_id}"' config.json)"
                         echo \$contents > config.json
                         """
