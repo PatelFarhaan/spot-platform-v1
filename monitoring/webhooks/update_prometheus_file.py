@@ -94,6 +94,22 @@ def get_instance_details(aws_obj: AWS, instance_ids: list, retry=1) -> list:
 
 
 # <==================================================================================================>
+#                                     REMOVE ALL CURRENT INSTANCES
+# <==================================================================================================>
+def remove_all_current_instances():
+    with open(prometheus_file_name) as rf:
+        data = yaml.load(rf, Loader=yaml.FullLoader)
+        for index1, sc in enumerate(data["scrape_configs"]):
+            if sc.get("job_name") == "worker-metrics":
+                for index2, config in enumerate(sc["static_configs"]):
+                    data["scrape_configs"][index1]["static_configs"][index2][
+                        "targets"] = []
+
+    with open(prometheus_file_name, "w") as wf:
+        yaml.dump(data, wf)
+
+
+# <==================================================================================================>
 #                              CRONTAB: UPDATE ALL CURRENT INSTANCES OF ALL ENV
 # <==================================================================================================>
 def update_current_instances_of_all_env() -> None:
@@ -215,5 +231,6 @@ if __name__ == '__main__':
     env_ins_mapping_fn = "/application/data/environment_instance_mapping.json"
     instanceid_ip_fn = "/application/data/instanceid_ip_mapping.json"
     prometheus_file_name = "/application/data/prometheus.yml"
+    remove_all_current_instances()
     update_current_instances_of_all_env()
     reload_prometheus()
