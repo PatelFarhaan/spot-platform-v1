@@ -1,6 +1,10 @@
 # create a multi-stage build and hardern the image
 FROM python:3.9.9-slim
 
+RUN apt update && apt upgrade -y
+
+RUN apt install cron vim -y
+
 EXPOSE 5000
 
 WORKDIR /application
@@ -11,10 +15,16 @@ ENV AWS_REGION=us-east-1
 
 ENV AUTO_SCALING_GROUP=lookup-service-spot-as
 
+COPY app.py /application
+
+COPY create_cron_task.sh /application
+
 COPY update_prometheus_file.py /application
 
 COPY requirements.txt /application
 
 RUN pip3 install -r requirements.txt
 
-CMD ["python3", "update_prometheus_file.py"]
+RUN bash create_cron_task.sh
+
+CMD ["python3", "app.py"]

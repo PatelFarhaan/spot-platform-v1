@@ -9,6 +9,18 @@ clients:
   - url: http://env-a-manager.***REMOVED***/loki/api/v1/push
 
 scrape_configs:
+  - job_name: varlogs
+    static_configs:
+      - targets:
+        - localhost
+        labels:
+          job: varlogs
+          node: worker
+          environment: '${ENV}'
+          instance: '${HOSTNAME}'
+          __path__: /var/log/*log
+          application: '${APPLICATION}'
+
   - job_name: nginx
     static_configs:
       - targets:
@@ -20,6 +32,7 @@ scrape_configs:
           instance: '${HOSTNAME}'
           application: '${APPLICATION}'
           __path__: /var/log/nginx/*log
+
   - job_name: supervisor
     static_configs:
       - targets:
@@ -31,25 +44,40 @@ scrape_configs:
           instance: '${HOSTNAME}'
           application: '${APPLICATION}'
           __path__: /var/log/supervisor/*log
-  - job_name: varlogs
+
+  - job_name: containers
     static_configs:
       - targets:
           - localhost
         labels:
-          job: varlogs
-          node: worker
+          job: containerlogs
           environment: '${ENV}'
           instance: '${HOSTNAME}'
-          __path__: /var/log/*log
           application: '${APPLICATION}'
-  - job_name: docker
+          __path__: /var/lib/docker/containers/*/*log
+
     pipeline_stages:
-      - docker: { }
-    static_configs:
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            attrs:
+      - json:
+          expressions:
+            tag:
+          source: attrs
+      - regex:
+          expression: (?P<image_name>(?:[^|]*[^|])).(?P<container_name>(?:[^|]*[^|])).(?P<image_id>(?:[^|]*[^|])).(?P<container_id>(?:[^|]*[^|]))
+          source: tag
+      - timestamp:
+          format: RFC3339Nano
+          source: time
       - labels:
-          job: docker
-          node: worker
-          environment: '${ENV}'
-          instance: '${HOSTNAME}'
-          application: '${APPLICATION}'
-          __path__: /var/lib/docker/containers/*/*-json.log
+          tag:
+          stream:
+          image_name:
+          container_name:
+          image_id:
+          container_id:
+      - output:
+          source: output

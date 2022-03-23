@@ -5,10 +5,19 @@ import os
 import sys
 import json
 import yaml
-import time
 import boto3
 import requests
+from pprint import pprint
+from flask_crontab import Crontab
+from flask import Flask, request, jsonify
 from botocore.exceptions import ClientError
+
+
+# <==================================================================================================>
+#                                          FLASK CONFIG
+# <==================================================================================================>
+app = Flask(__name__)
+crontab = Crontab(app)
 
 
 # <==================================================================================================>
@@ -49,70 +58,18 @@ class AWS(object):
 
 
 # <==================================================================================================>
-#                                      GET ALL INSTANCES IN ASG
+#                                          PARSE DATA
 # <==================================================================================================>
-def get_all_instances_in_asg(autoscale_group_name: str) -> list:
-    aws_obj = AWS()
-    asg_client = aws_obj.get_autoscale_client()
-    response = asg_client.describe_auto_scaling_groups(
-        AutoScalingGroupNames=[autoscale_group_name]
-    )
-    if response.get("AutoScalingGroups"):
-        response = response["AutoScalingGroups"][0]
-        instances = response.get("Instances", {})
-        instance_ids = [instance["InstanceId"] for instance in instances if instance.get("InstanceId")]
-        return instance_ids
-    return []
+def is_instance_launching(data):
+    message = json.loads(data["Message"])
+    description = message.get("Description")
+    instance_id = message.get("EC2InstanceId")
+    asg_name = message.get("AutoScalingGroupName")
 
-
-# <==================================================================================================>
-#                                      GET INSTANCE DETAILS
-# <==================================================================================================>
-def get_instance_details(aws_obj: AWS, instance_ids: list, retry=1) -> list:
-
-    if retry > 3:
-        print("Instances are not in ready state! Aborting program")
-        sys.exit(0)
-
-    ip_list = []
-    ec2_client = aws_obj.get_ec2_client()
-    response = ec2_client.describe_instances(InstanceIds=instance_ids)
-    reservations = response.get("Reservations", {})
-
-    for instance_obj in reservations:
-        for instance in instance_obj.get("Instances", []):
-            instance_id = instance.get("InstanceId")
-            public_ip_address = instance.get("PublicIpAddress")
-
-            if all([instance_id, public_ip_address]):
-                ip_list.append(public_ip_address)
-            else:
-                print("Sleeping for 20 secs as instances are not in running state")
-                time.sleep(20)
-                return get_instance_details(aws_obj, instance_ids, retry + 1)
-    return ip_list
-
-
-# <==================================================================================================>
-#                              CRONTAB: UPDATE ALL CURRENT INSTANCES OF ALL ENV
-# <==================================================================================================>
-def update_current_instances_of_all_env() -> None:
-    aws_obj = AWS()
-    all_env_names = read_json(env_ins_mapping_fn)
-
-    for asg_name in all_env_names:
-        instance_ids = get_all_instances_in_asg(asg_name)
-        instance_ips = get_instance_details(aws_obj, instance_ids)
-        environment, application_name = get_environment_details(asg_name)
-
-        for ip_address in instance_ips:
-            with open(prometheus_file_name) as rf:
-                is_launch = True
-                data = yaml.load(rf, Loader=yaml.FullLoader)
-                update_instance_details(data, is_launch, environment, ip_address, application_name)
-
-            with open(prometheus_file_name, "w") as wf:
-                yaml.dump(data, wf)
+    if description.startswith("Terminating EC2 instance"):
+        return False, instance_id, asg_name
+    elif description.startswith("Launching a new EC2 instance"):
+        return True, instance_id, asg_name
 
 
 # <==================================================================================================>
@@ -137,6 +94,27 @@ def get_environment_details(asg_name):
 
     if data.get(asg_name):
         return data[asg_name][0], data[asg_name][1]
+
+    aws_obj = AWS()
+    env = app_name = None
+    as_client = aws_obj.get_autoscale_client()
+    response = as_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'auto-scaling-group',
+                'Values': [asg_name]
+            },
+        ],
+    )
+    for tags in response["Tags"]:
+        if tags["Key"] == "Environment":
+            env = tags["Value"]
+        if tags["Key"] == "Application":
+            app_name = tags["Value"]
+
+    data[asg_name] = [env, app_name]
+    save_json(env_ins_mapping_fn, data)
+    return env, app_name
 
 
 # <==================================================================================================>
@@ -193,14 +171,77 @@ def check_instance_is_present(instance_id, launch):
 
 
 # <==================================================================================================>
-#                                             ROUTE ENDPOINT
+#                                    SAVE INSTANCE IP ADDRESS IN JSON
+# <==================================================================================================>
+def save_instance_ip_mapping(instance_id, save_object):
+    data = read_json(instanceid_ip_fn)
+    data[instance_id] = save_object
+    save_json(instanceid_ip_fn, data)
+
+
+# <==================================================================================================>
+#                                          UPDATE PROMETHEUS FILE
+# <==================================================================================================>
+def update_prometheus_file(data):
+    is_launch, instance_id, asg_name = is_instance_launching(data)
+
+    if check_instance_is_present(instance_id, is_launch):
+        return jsonify({}), 200
+
+    if is_launch:
+        environment, application_name = get_environment_details(asg_name)
+        ipv4_address = get_instance_public_ip(instance_id)
+        save_obj = {
+            "environment": environment,
+            "ipv4_address": ipv4_address,
+            "application_name": application_name
+        }
+        save_instance_ip_mapping(instance_id, save_obj)
+    else:
+        data = read_json(instanceid_ip_fn)
+        instance_details = data.pop(instance_id)
+        environment = instance_details["environment"]
+        ipv4_address = instance_details["ipv4_address"]
+        application_name = instance_details["application_name"]
+        save_json(instanceid_ip_fn, data)
+
+    with open(prometheus_file_name) as rf:
+        data = yaml.load(rf, Loader=yaml.FullLoader)
+        update_instance_details(data, is_launch, environment, ipv4_address, application_name)
+
+    with open(prometheus_file_name, "w") as wf:
+        yaml.dump(data, wf)
+
+
+# <==================================================================================================>
+#                                          SNS NOTIFICATION
+# <==================================================================================================>
+@app.route("/webhook/instance-modification", methods=["POST"])
+def sns_notification():
+    data = json.loads(request.get_data())
+    pprint(f"\n\nData -> {data}\n\n")
+    update_prometheus_file(data)
+    reload_prometheus()
+    return jsonify({}), 200
+
+
+# <==================================================================================================>
+#                                          ROUTE ENDPOINT
 # <==================================================================================================>
 def reload_prometheus():
     requests.post('http://prometheus:9090/-/reload')
 
 
 # <==================================================================================================>
-#                                              READ JSON
+#                                          ROUTE ENDPOINT
+# <==================================================================================================>
+@app.route("/webhook/server-health")
+def health_check():
+    return jsonify({"status": "OK"})
+
+
+# <==================================================================================================>
+#                                          READ JSON
 # <==================================================================================================>
 def read_json(filename):
     with open(filename, 'r') as openfile:
@@ -209,11 +250,18 @@ def read_json(filename):
 
 
 # <==================================================================================================>
-#                                           MAIN FUNCTION
+#                                          SAVE JSON
+# <==================================================================================================>
+def save_json(filename, data):
+    with open(filename, "w") as outfile:
+        json.dump(data, outfile, indent=4)
+
+
+# <==================================================================================================>
+#                                         MAIN FUNCTION
 # <==================================================================================================>
 if __name__ == '__main__':
     env_ins_mapping_fn = "/application/data/environment_instance_mapping.json"
     instanceid_ip_fn = "/application/data/instanceid_ip_mapping.json"
     prometheus_file_name = "/application/data/prometheus.yml"
-    update_current_instances_of_all_env()
-    reload_prometheus()
+    app.run(host="0.0.0.0", port=5000)

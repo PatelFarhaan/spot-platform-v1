@@ -6,8 +6,10 @@ services:
     image: grafana/promtail:2.4.0
     container_name: promtail
     volumes:
-      - /var/log:/var/log
+      - /var/log:/var/lo
+      - /var/log/supervisor:/var/log/supervisor:ro
       - /home/ubuntu/docker_data/promtail:/etc/promtail
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
     ports:
       - "1514:1514"
     restart: always
@@ -19,6 +21,7 @@ services:
       - HOSTNAME=${HOSTNAME}
     networks:
       - monitoring
+
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
     container_name: node_exporter
@@ -28,6 +31,7 @@ services:
       - "9100:9100"
     networks:
       - monitoring
+
   cadvisor:
     image: 'google/cadvisor:latest'
     container_name: cadvisor
@@ -40,5 +44,29 @@ services:
       - /dev/disk:/dev/disk/:ro
     ports:
       - "8080:8080"
+    networks:
+      - monitoring
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "8008:8080"
+    volumes:
+      - /home/ubuntu/docker_data/nginx:/etc/nginx/conf.d
+      - /home/ubuntu/docker_data/nginx/logs:/var/log/nginx
+    networks:
+      - monitoring
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:0.10.0
+    container_name: nginx_exporter
+    restart: always
+    command:
+      -nginx.scrape-uri=http://host.docker.internal:8080/stub_status
+    ports:
+      - "9113:9113"
     networks:
       - monitoring
