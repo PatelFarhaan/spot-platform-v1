@@ -25,7 +25,7 @@
   "gnetId": 13639,
   "graphTooltip": 0,
   "id": 13,
-  "iteration": 1647751640274,
+  "iteration": 1648342364689,
   "links": [
     {
       "$$hashKey": "object:59",
@@ -213,8 +213,8 @@
       {
         "current": {
           "selected": false,
-          "text": "varlogs",
-          "value": "varlogs"
+          "text": "nginx",
+          "value": "nginx"
         },
         "datasource": {
           "type": "loki",
@@ -240,8 +240,8 @@
       {
         "current": {
           "selected": false,
-          "text": "ip-172-31-95-29",
-          "value": "ip-172-31-95-29"
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": {
           "type": "loki",
@@ -249,7 +249,7 @@
         },
         "definition": "label_values(instance)",
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "Instance",
         "multi": false,
         "name": "instance",
@@ -320,7 +320,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "",
           "value": ""
         },
@@ -359,8 +359,8 @@
     ]
   },
   "timezone": "",
-  "title": "Logs Streamer",
+  "title": "Platform Logging",
   "uid": "liz0yRCZz",
-  "version": 15,
+  "version": 17,
   "weekStart": ""
 }
