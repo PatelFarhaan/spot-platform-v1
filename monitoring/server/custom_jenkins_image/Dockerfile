@@ -2,9 +2,15 @@ FROM jenkins/jenkins:lts
 
 USER root
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt update && apt upgrade -y
 
+RUN apt install apt-utils -y
+
 RUN apt install python3-pip -y
+
+RUN pip3 install python-dateutil
 
 RUN apt install virtualenv -y
 
@@ -16,7 +22,7 @@ RUN pip3 install boto3
 
 RUN apt install sudo
 
-RUN pip3 install requests
+RUN sudo pip3 install requests
 
 RUN pip3 install python-dateutil
 
@@ -45,3 +51,5 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
 RUN apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 
 RUN apt update && apt install terraform
+
+RUN pip3 show requests

@@ -25,6 +25,7 @@ scrape_configs:
         targets:
           - cadvisor:8080
           - node_exporter:9100
+          - nginx_exporter:9113
   - job_name: worker-metrics
     metrics_path: /metrics
     relabel_configs:

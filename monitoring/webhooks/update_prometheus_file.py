@@ -168,7 +168,7 @@ def update_instance_details(data, is_launch, environment, ipv4_address, applicat
                         if f"{ipv4_address}:9100" in data["scrape_configs"][index1]["static_configs"][index2]["targets"]:
                             return
                         else:
-                            ip_list = [f"{ipv4_address}:9100", f"{ipv4_address}:8080"]
+                            ip_list = [f"{ipv4_address}:9100", f"{ipv4_address}:8080", f"{ipv4_address}:9113"]
                             data["scrape_configs"][index1]["static_configs"][index2]["targets"].extend(ip_list)
                             return
                     else:
@@ -178,6 +178,8 @@ def update_instance_details(data, is_launch, environment, ipv4_address, applicat
                             f"{ipv4_address}:9100")
                         data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(
                             f"{ipv4_address}:8080")
+                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(
+                            f"{ipv4_address}:9113")
                         return
 
             new_app_entry = {
@@ -189,6 +191,7 @@ def update_instance_details(data, is_launch, environment, ipv4_address, applicat
                 'targets': [
                     f"{ipv4_address}:9100",
                     f"{ipv4_address}:8080"
+                    f"{ipv4_address}:9113"
                 ]
             }
             sc["static_configs"].append(new_app_entry)

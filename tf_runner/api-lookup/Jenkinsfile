@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+
     environment {
         aws_region="us-east-1"
         tear_down="${params.tear_down}"
