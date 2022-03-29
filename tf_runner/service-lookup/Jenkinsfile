@@ -28,7 +28,7 @@ pipeline {
 	                    """
                     }
                     else {
-                        if ("${params.ami_id}" == "default"){
+                        if ("${params.ami_id}" == "null"){
                             sh """
                             cd ${env.jenkins_filepath}
                             contents="\$(jq '.ami_id = "${env.ami_id}"' config.json)"
