@@ -10,3 +10,4 @@ receivers:
   slack_configs:
   - channel: '#development'
     send_resolved: true
+    icon_url: https://avatars3.githubusercontent.com/u/3380462

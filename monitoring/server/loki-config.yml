@@ -64,4 +64,4 @@ table_manager:
   retention_period: 300h
 
 ruler:
-  alertmanager_url: http://localhost:9093
+  alertmanager_url: http://alertmanager:9093
