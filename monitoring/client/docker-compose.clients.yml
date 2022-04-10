@@ -72,3 +72,18 @@ services:
       - "9113:9113"
     networks:
       - monitoring
+
+  nginx_request_exporter:
+    image: quay.io/martinhelmich/prometheus-nginxlog-exporter
+    container_name: nginx_request_exporter
+    restart: always
+    command:
+      - /mnt/nginxlogs/access.log
+    volumes:
+      - /home/ubuntu/docker_data/nginx/logs:/mnt/nginxlogs
+    depends_on:
+      - nginx
+    ports:
+      - "4040:4040"
+    networks:
+      - monitoring

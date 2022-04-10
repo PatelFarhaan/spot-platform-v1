@@ -80,9 +80,12 @@ def get_instance_details(aws_obj: AWS, instance_ids: list, retry=1) -> list:
     reservations = response.get("Reservations", {})
 
     for instance_obj in reservations:
+        from pprint import pprint
+        pprint(instance_obj)
         for instance in instance_obj.get("Instances", []):
             instance_id = instance.get("InstanceId")
             public_ip_address = instance.get("PublicIpAddress")
+            print(instance_id, public_ip_address)
 
             if all([instance_id, public_ip_address]):
                 ip_list.append(public_ip_address)

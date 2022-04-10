@@ -1,12 +1,19 @@
 alerting:
   alertmanagers:
-    - static_configs:
-        - targets: null
+    - scheme: http
+      static_configs:
+        - targets: [ 'alertmanager:9093' ]
+
+
+rule_files:
+  - rules.yml
+
 global:
   evaluation_interval: 30s
   scrape_interval: 30s
   scrape_timeout: 10s
-rule_files: null
+
+
 scrape_configs:
   - job_name: master-metrics
     metrics_path: /metrics

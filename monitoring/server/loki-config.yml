@@ -4,6 +4,21 @@ server:
   http_listen_port: 3100
   grpc_listen_port: 9096
 
+limits_config:
+  ingestion_rate_mb: 1024
+  ingestion_burst_size_mb: 1024
+
+querier:
+  max_concurrent: 2048
+
+frontend:
+  max_outstanding_per_tenant: 4096
+  compress_responses: true
+
+query_range:
+  split_queries_by_interval: 0
+  parallelise_shardable_queries: false
+
 common:
   path_prefix: /tmp/loki
   storage:

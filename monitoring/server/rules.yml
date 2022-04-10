@@ -1,0 +1,11 @@
+groups:
+
+- name: Memory-usage
+  rules:
+  - alert: 'High memory usage'
+    expr: ceil((((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100)) > 80
+    labels:
+      severity: 'critical'
+    annotations:
+      title: "Memory Usage"
+      description: 'Memory usage threshold set to `80%`.'
