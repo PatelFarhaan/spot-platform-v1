@@ -17,9 +17,11 @@ pipeline {
         stage("Update existing AMI name to old") {
             steps {
                 script {
-                    sh """
-                        aws ec2 create-tags  --resources ${env.image_id} --tags Key=Name,Value='${env.ami_name}-old' --profile=${env.aws_profile_name} --region=${env.aws_region}
-                    """
+                    if (env.image_id != "null") {
+                        sh """
+                            aws ec2 create-tags  --resources ${env.image_id} --tags Key=Name,Value='${env.ami_name}-old' --profile=${env.aws_profile_name} --region=${env.aws_region}
+                        """
+                    }
                 }
             }
         }
@@ -89,9 +91,11 @@ pipeline {
 
         failure {
             script {
-                sh """
-                    aws ec2 create-tags  --resources ${env.image_id} --tags Key=Name,Value=${env.ami_name} --profile=${env.aws_profile_name} --region=${env.aws_region}
-                """
+                if (env.image_id != "null") {
+                    sh """
+                        aws ec2 create-tags  --resources ${env.image_id} --tags Key=Name,Value=${env.ami_name} --profile=${env.aws_profile_name} --region=${env.aws_region}
+                    """
+                }
             }
         }
     }
