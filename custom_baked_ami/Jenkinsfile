@@ -1,0 +1,98 @@
+pipeline {
+    agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+
+    environment {
+        aws_region="us-east-1"
+        aws_profile_name="spot-platform"
+        ami_name = 'spot-platform-custom-backed-ami'
+        def image_id = sh(script: "aws ec2 describe-images --profile=${env.aws_profile_name} --region=\"$aws_region\" --filters '[{\"Name\": \"name\", \"Values\": [\"$ami_name\"]}]' | jq -r '.Images[0].ImageId'", returnStdout: true).trim()
+        def snapshot_id = sh(script: "aws ec2 describe-images --profile=${env.aws_profile_name} --region=\"$aws_region\" --filters '[{\"Name\": \"name\", \"Values\": [\"$ami_name\"]}]' | jq -r '.Images[0].BlockDeviceMappings[0].Ebs.SnapshotId'", returnStdout: true).trim()
+    }
+
+    stages {
+        stage("Update existing AMI name to old") {
+            steps {
+                script {
+                    sh """
+                        aws ec2 create-tags  --resources ${env.image_id} --tags Key=Name,Value='${env.ami_name}-old' --profile=${env.aws_profile_name} --region=${env.aws_region}
+                    """
+                }
+            }
+        }
+
+        stage("Packer Init") {
+            steps {
+                script {
+                    sh """
+                        cd custom_baked_ami/
+                        packer init .
+                    """
+                }
+            }
+        }
+
+        stage("Packer Validate") {
+            steps {
+                script {
+                    sh """
+                        cd custom_baked_ami/
+                        packer validate -var ami_name=$ami_name .
+                    """
+                }
+            }
+        }
+
+        stage("Packer Build") {
+            steps {
+                script {
+                    sh """
+                        cd custom_baked_ami/
+                        packer build -var ami_name=$ami_name .
+                    """
+                }
+            }
+        }
+
+        stage("Artifact ID") {
+            steps {
+                script {
+                    sh """
+                        cd custom_baked_ami/
+                        cat manifest.json | jq '.builds[].artifact_id'
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                if ("${env.image_id}" != "null") {
+                    sh """
+                    echo "Deleting AMI image: ${env.image_id}"
+                    aws ec2 deregister-image --profile=${env.aws_profile_name} --region=${env.aws_region} --image-id='${env.image_id}-old'
+                    """
+                }
+                if ("${env.snapshot_id}" != "null") {
+                    sh """
+                    echo "Deleting Snapshot: ${env.snapshot_id}"
+                    aws ec2 delete-snapshot --profile=${env.aws_profile_name} --region=${env.aws_region} --snapshot-id=${env.snapshot_id}
+                    """
+                }
+            }
+        }
+
+        failure {
+            script {
+                sh """
+                    aws ec2 create-tags  --resources ${env.image_id} --tags Key=Name,Value=${env.ami_name} --profile=${env.aws_profile_name} --region=${env.aws_region}
+                """
+            }
+        }
+    }
+}
