@@ -34,14 +34,14 @@ build {
   ]
 
   provisioner "file" {
-    source      = "./../custom_baked_ami"
+    source      = "./../ami"
     destination = "/tmp"
   }
 
   provisioner "shell" {
     inline = [
       "sudo mkdir -p /var/opt/spotops/agents",
-      "sudo mv /tmp/custom_baked_ami/* /var/opt/spotops/agents/"
+      "sudo mv /tmp/ami/spotops_script.sh /var/opt/spotops/agents/"
     ]
     environment_vars = [
         "DEBIAN_FRONTEND=noninteractive"
@@ -49,7 +49,7 @@ build {
   }
 
   provisioner "shell" {
-    script = "spotops_agents.sh"
+    script = "spotops_script.sh"
     environment_vars = [
         "DEBIAN_FRONTEND=noninteractive"
     ]

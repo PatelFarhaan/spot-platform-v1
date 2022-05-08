@@ -17,10 +17,8 @@ services:
     command:
       -config.expand-env=true
       -config.file=/etc/promtail/promtail-config.yml
-    environment:
-      - ENV=${ENVIRONMENT}
-      - HOSTNAME=${HOSTNAME}
-      - APPLICATION=${APPLICATION}
+    env_file:
+      - promtail.env
     networks:
       - spotops_monitoring
     deploy:
@@ -86,10 +84,9 @@ services:
       - "80:80"
       - "8081:8081"
     volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - spotops-nginx-logs:/var/log/nginx:rw
-#      - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - spotops_monitoring
     deploy:
@@ -144,7 +141,6 @@ services:
       replicas: ${APP_REPLICAS}
     labels:
       org.label-schema.group: "spotops_monitoring"
-
 
 volumes:
   spotops-nginx-logs:
