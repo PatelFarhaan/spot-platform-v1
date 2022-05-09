@@ -4,6 +4,12 @@ networks:
   spotops_monitoring:
     driver: bridge
 
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+
 services:
   promtail:
     image: grafana/promtail:2.4.0
@@ -80,6 +86,7 @@ services:
     image: nginx
     container_name: nginx
     restart: always
+    logging: *default-logging
     ports:
       - "80:80"
       - "8081:8081"
@@ -131,6 +138,7 @@ services:
   main_application:
     image: ${CLIENT_APP_IMAGE}
     restart: always
+    logging: *default-logging
     expose:
       - ${CLIENT_APP_PORT}
     env_file:
@@ -139,6 +147,11 @@ services:
       - spotops_monitoring
     deploy:
       replicas: ${APP_REPLICAS}
+    healthcheck:
+      test: curl --fail http://localhost:${CLIENT_APP_PORT} || exit 1
+      interval: 60s
+      retries: 5
+      timeout: 10s
     labels:
       org.label-schema.group: "spotops_monitoring"
 

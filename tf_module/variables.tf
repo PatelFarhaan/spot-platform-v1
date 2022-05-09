@@ -13,6 +13,7 @@ variable "app_name" {}
 
 variable "aws_region" {}
 
+variable "aws_ecr_acc_id" {}
 
 variable "subnet_ids" {
   type = list(string)

@@ -31,6 +31,7 @@ module "app-spot-platform" {
   aws_region                 = local.config_data.aws_region
   prefix_name                = local.config_data.prefix_name
   ssh_key_name               = local.config_data.ssh_key_name
+  aws_ecr_acc_id             = local.config_data.aws_ecr_acc_id
   ebs_volume_size            = local.config_data.ebs_volume_size
   acm_certificate            = local.config_data.acm_certificate
   asg_availability_zones     = local.config_data.availability_zones
