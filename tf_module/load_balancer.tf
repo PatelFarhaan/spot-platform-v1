@@ -17,7 +17,7 @@ resource "aws_alb" "load_balancer" {
 // Create the LB security group
 resource "aws_security_group" "alb_security_group" {
   vpc_id      = var.vpc_id
-  name        = "${var.app_name}-alb-tf"
+  name        = "${var.app_name}-${var.env}-alb-tf"
   description = "Allow all inbound traffic on port 80 and 443"
 
   dynamic "ingress" {
@@ -47,8 +47,8 @@ resource "aws_security_group" "alb_security_group" {
 // Create the instance security group
 resource "aws_security_group" "instance_security_group" {
   vpc_id      = var.vpc_id
-  name        = "${var.app_name}-instance-tf"
   description = "Allow all traffic from load balancer"
+  name        = "${var.app_name}-${var.env}-instance-tf"
 
   dynamic "ingress" {
     for_each = var.instance_security_group
