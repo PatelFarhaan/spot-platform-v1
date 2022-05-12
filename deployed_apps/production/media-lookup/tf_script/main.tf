@@ -20,7 +20,7 @@ locals {
 
 // Using pre-declared module
 module "app-spot-platform" {
-  source = "./../../../../tf_module"
+  source = "./../../tf_module"
 
   env                        = local.config_data.env
   tags                       = local.config_data.tags
