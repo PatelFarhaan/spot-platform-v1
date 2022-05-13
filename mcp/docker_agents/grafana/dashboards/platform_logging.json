@@ -4,7 +4,10 @@
       {
         "$$hashKey": "object:75",
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -25,7 +28,7 @@
   "gnetId": 13639,
   "graphTooltip": 0,
   "id": 13,
-  "iteration": 1648342364689,
+  "iteration": 1652468686197,
   "links": [
     {
       "$$hashKey": "object:59",
@@ -119,7 +122,8 @@
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.3.3",
@@ -129,8 +133,8 @@
             "type": "loki",
             "uid": "imfHcfA7k"
           },
-          "expr": "sum(count_over_time({instance=~\"$instance\",application=~\"$application\",node=~\"$node\",environment=~\"$environment\",job=~\"$job\"} |= \"$search\" [$__interval]))",
-          "legendFormat": "Data Ingestion",
+          "expr": "count_over_time({application=~\"$application\",environment=~\"$environment\", container_name=~\"$container\"} |= \"$search\" [$__interval])",
+          "legendFormat": "{{container_name}}",
           "refId": "A"
         }
       ],
@@ -166,7 +170,7 @@
             "type": "loki",
             "uid": "imfHcfA7k"
           },
-          "expr": "{instance=~\"$instance\",application=~\"$application\",node=~\"$node\",environment=~\"$environment\",job=~\"$job\"} |= \"$search\"",
+          "expr": "{application=~\"$application\",environment=~\"$environment\", container_name=~\"$container\"} |= \"$search\"",
           "hide": false,
           "legendFormat": "",
           "refId": "A"
@@ -177,8 +181,8 @@
       "type": "logs"
     }
   ],
-  "refresh": "30s",
-  "schemaVersion": 34,
+  "refresh": "",
+  "schemaVersion": 36,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -213,75 +217,21 @@
       {
         "current": {
           "selected": false,
-          "text": "nginx",
-          "value": "nginx"
+          "text": "staging",
+          "value": "staging"
         },
         "datasource": {
           "type": "loki",
           "uid": "imfHcfA7k"
         },
-        "definition": "label_values(job)",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Job",
-        "multi": false,
-        "name": "job",
-        "options": [],
-        "query": "label_values(job)",
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "loki",
-          "uid": "imfHcfA7k"
-        },
-        "definition": "label_values(instance)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Instance",
-        "multi": false,
-        "name": "instance",
-        "options": [],
-        "query": "label_values(instance)",
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "production",
-          "value": "production"
-        },
-        "datasource": {
-          "type": "loki",
-          "uid": "imfHcfA7k"
-        },
-        "definition": "label_values(environment)",
+        "definition": "label_values({application=~\"$application\"}, environment)",
         "hide": 0,
         "includeAll": false,
         "label": "Environment",
         "multi": false,
         "name": "environment",
         "options": [],
-        "query": "label_values(environment)",
+        "query": "label_values({application=~\"$application\"}, environment)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -293,30 +243,31 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "worker",
-          "value": "worker"
+          "selected": true,
+          "text": [
+            "nginx"
+          ],
+          "value": [
+            "nginx"
+          ]
         },
         "datasource": {
           "type": "loki",
           "uid": "imfHcfA7k"
         },
-        "definition": "label_values(node)",
+        "definition": "label_values({application=~\"$application\",environment=~\"$environment\"}, container_name)",
         "hide": 0,
         "includeAll": false,
-        "label": "Node",
-        "multi": false,
-        "name": "node",
+        "label": "Container",
+        "multi": true,
+        "name": "container",
         "options": [],
-        "query": "label_values(node)",
-        "refresh": 2,
+        "query": "label_values({application=~\"$application\",environment=~\"$environment\"}, container_name)",
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "type": "query"
       },
       {
         "current": {
@@ -361,6 +312,6 @@
   "timezone": "",
   "title": "Platform Logging",
   "uid": "liz0yRCZz",
-  "version": 17,
+  "version": 28,
   "weekStart": ""
 }

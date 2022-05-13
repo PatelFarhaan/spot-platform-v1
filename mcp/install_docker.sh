@@ -13,4 +13,5 @@ sudo chmod +x /usr/local/bin/docker-compose &&
 sudo systemctl restart docker.service &&
 sudo usermod -aG docker ${USER}
 sudo su - ${USER}
+echo "y" | docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 #https://devopscube.com/docker-containers-as-build-slaves-jenkins/

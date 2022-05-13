@@ -10,6 +10,12 @@ clients:
 
 scrape_configs:
   - job_name: containers
+    relabel_configs:
+      - source_labels: [ __address__ ]
+        target_label: container_id
+      - source_labels: [ container_id ]
+        target_label: __path__
+        replacement: /var/lib/docker/containers/$1*/*.log
     static_configs:
       - targets:
         - localhost

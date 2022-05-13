@@ -24,3 +24,13 @@
       "tag": "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
    }
 }
+
+// Loki default config
+{
+    "debug" : true,
+    "log-driver": "loki",
+    "log-opts": {
+        "loki-url": "http://env-a-manager.***REMOVED***/loki/api/v1/push",
+        "loki-batch-size": "300"
+    }
+}
