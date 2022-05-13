@@ -1,18 +1,20 @@
+import os
 import nginx
 
-# read manifeast and have a for loop for apps for creating new conf files
+
+main_application_port = int(os.getenv("CLIENT_APP_PORT"))
 c = nginx.Conf()
 s = nginx.Server()
 s.add(
-    nginx.Key('listen', '5000'),
+    nginx.Key('listen', '80'),
     nginx.Key('server_name', '_'),
     nginx.Location(' /',
-         nginx.Key('proxy_pass', 'http://app_name:5000;'),
-         nginx.Key('send_timeout;', '3600;'),
-         nginx.Key('proxy_read_timeout', '3600;'),
-         nginx.Key('proxy_send_timeout', '3600;'),
-         nginx.Key('proxy_connect_timeout', '3600;')
+                   nginx.Key('send_timeout', 3600),
+                   nginx.Key('proxy_send_timeout', 3600),
+                   nginx.Key('proxy_read_timeout', 3600),
+                   nginx.Key('proxy_connect_timeout', 3600),
+                   nginx.Key('proxy_pass', f'http://main_application:{main_application_port}')
+                   )
     )
-)
 c.add(s)
-nginx.dumpf(c, './test.conf')
+nginx.dumpf(c, './nginx/conf.d/application.conf')

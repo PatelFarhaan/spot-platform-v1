@@ -51,6 +51,7 @@ data "template_file" "spotops_user_data" {
 #!/bin/bash
 
 set -e -x
+pip3 install python-nginx
 export AWS_ECR_ID=${var.aws_ecr_acc_id}
 s3_spotops_agents_bucket='docker-agents'
 s3_app_bucket='${var.env}/${var.app_name}'
@@ -69,6 +70,7 @@ aws ecr get-login-password --region ${var.aws_region} | docker login --username 
 aws s3 cp s3://spot-platform/$s3_app_bucket/app.env ./
 aws s3 cp s3://spot-platform/$s3_app_bucket/promtail.env ./
 aws s3 cp s3://spot-platform/$s3_spotops_agents_bucket/ ./ --recursive
+python3 create_nginx_conf.py
 
 sleep 10
 sudo -E docker-compose up -d --build --force-recreate --remove-orphans
