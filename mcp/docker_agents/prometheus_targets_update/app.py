@@ -21,6 +21,45 @@ crontab = Crontab(app)
 
 
 # <==================================================================================================>
+#                                          SEND SLACK NOTIFICATION
+# <==================================================================================================>
+def send_slack_notification(data):
+    topic_arn = data.get("TopicArn")
+    subscribe_url = data.get("SubscribeURL")
+    url = "***REMOVED***"
+    slack_data = {
+        "username": "SpotOpsBot",
+        "icon_emoji": ":busstop:",
+        "blocks": [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*NEW SUBSCRIPTION*"
+                }
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*TopicArn:* {topic_arn} \n*SubscribeURL:* {subscribe_url}"
+                }
+            }
+        ]
+    }
+    byte_length = str(sys.getsizeof(slack_data))
+    headers = {'Content-Type': "application/json", 'Content-Length': byte_length}
+    try:
+        response = requests.post(url, data=json.dumps(slack_data), headers=headers)
+        if response.status_code == 200:
+            print("Success sending slack message!!!")
+        else:
+            print(f"Failed: {response.status_code}")
+    except Exception as e:
+        print("Failed sending slack message!!!", e)
+
+
+# <==================================================================================================>
 #                                          AWS CLIENT
 # <==================================================================================================>
 class AWS(object):
@@ -61,6 +100,7 @@ class AWS(object):
 #                                          PARSE DATA
 # <==================================================================================================>
 def is_instance_launching(data):
+    print(data)
     message = json.loads(data["Message"])
     description = message.get("Description")
     instance_id = message.get("EC2InstanceId")
@@ -222,9 +262,12 @@ def update_prometheus_file(data):
 @app.route("/webhook/instance-modification", methods=["POST"])
 def sns_notification():
     data = json.loads(request.get_data())
-    pprint(f"\n\nData -> {data}\n\n")
-    update_prometheus_file(data)
-    reload_prometheus()
+    pprint(f"Data -> {data}")
+    if data.get("Type") == "SubscriptionConfirmation":
+        send_slack_notification(data)
+    else:
+        update_prometheus_file(data)
+        reload_prometheus()
     return jsonify({}), 200
 
 

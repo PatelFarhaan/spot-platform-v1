@@ -1,6 +1,6 @@
 // Creating SNS Topic for Spot notification
 resource "aws_sns_topic" "spot_instance_update_sns_topic" {
-  name            = "spot-instance-update-${var.app_name}"
+  name            = "spot-updates-${var.app_name}-${var.env}"
   delivery_policy = <<EOF
 {
   "http": {
