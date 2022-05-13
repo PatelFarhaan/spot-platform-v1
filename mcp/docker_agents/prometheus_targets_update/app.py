@@ -23,10 +23,19 @@ crontab = Crontab(app)
 # <==================================================================================================>
 #                                          SEND SLACK NOTIFICATION
 # <==================================================================================================>
-def send_slack_notification(data):
-    topic_arn = data.get("TopicArn")
-    subscribe_url = data.get("SubscribeURL")
+def send_slack_notification(data={}, failed=False):
     url = "***REMOVED***"
+
+    print(data, failed)
+    if failed:
+        title = "*PROMETHEUS UPDATE FAILED*"
+        links = "*LokiURL*: http://env-a-manager.***REMOVED***/d/liz0yRCZz/platform-logging?orgId=1&var-application=mcp&var-environment=staging&var-container=prometheus_target_update&var-search="
+    else:
+        topic_arn = data.get("TopicArn")
+        subscribe_url = data.get("SubscribeURL")
+        title = "*NEW SUBSCRIPTION*"
+        links = f"*TopicArn:* {topic_arn} \n*SubscribeURL:* {subscribe_url}"
+
     slack_data = {
         "username": "SpotOpsBot",
         "icon_emoji": ":busstop:",
@@ -35,14 +44,14 @@ def send_slack_notification(data):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "*NEW SUBSCRIPTION*"
+                    "text": f"{title}"
                 }
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*TopicArn:* {topic_arn} \n*SubscribeURL:* {subscribe_url}"
+                    "text": f"{links}"
                 }
             }
         ]
@@ -261,13 +270,17 @@ def update_prometheus_file(data):
 # <==================================================================================================>
 @app.route("/webhook/instance-modification", methods=["POST"])
 def sns_notification():
-    data = json.loads(request.get_data())
-    pprint(f"Data -> {data}")
-    if data.get("Type") == "SubscriptionConfirmation":
-        send_slack_notification(data)
-    else:
-        update_prometheus_file(data)
-        reload_prometheus()
+    try:
+        data = json.loads(request.get_data())
+        pprint(f"Data -> {data}")
+        if data.get("Type") == "SubscriptionConfirmation":
+            send_slack_notification(data=data)
+        else:
+            update_prometheus_file(data)
+            reload_prometheus()
+    except Exception as e:
+        print(e)
+        send_slack_notification(failed=True)
     return jsonify({}), 200
 
 
