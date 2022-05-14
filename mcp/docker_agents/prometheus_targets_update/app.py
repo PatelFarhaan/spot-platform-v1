@@ -109,7 +109,6 @@ class AWS(object):
 #                                          PARSE DATA
 # <==================================================================================================>
 def is_instance_launching(data):
-    print(data)
     message = json.loads(data["Message"])
     description = message.get("Description")
     instance_id = message.get("EC2InstanceId")
@@ -279,7 +278,7 @@ def sns_notification():
             update_prometheus_file(data)
             reload_prometheus()
     except Exception as e:
-        print(e)
+        print(f"Something went wrong: {e}")
         send_slack_notification(failed=True)
     return jsonify({}), 200
 

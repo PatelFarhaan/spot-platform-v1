@@ -1,3 +1,4 @@
+// Caluclating the cost of the infrastructure
 resource "null_resource" "infracost_estimation" {
   triggers = {
     always_run = timestamp()
@@ -12,6 +13,7 @@ resource "null_resource" "infracost_estimation" {
 }
 
 
+// Updating the alb_links.json file in S3 spot bucket
 resource "null_resource" "update_elb_in_s3" {
   depends_on = [aws_alb.load_balancer]
 
@@ -53,6 +55,7 @@ resource "null_resource" "update_elb_in_s3" {
 }
 
 
+// Deleting the alb_links.json file in S3 spot bucket
 resource "null_resource" "delete_elb_in_s3" {
   triggers = {
     alb_dns = aws_alb.load_balancer.dns_name
