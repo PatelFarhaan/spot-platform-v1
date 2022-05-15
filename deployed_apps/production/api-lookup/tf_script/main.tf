@@ -27,6 +27,7 @@ module "app-spot-platform" {
   ami_id                     = local.config_data.ami_id
   vpc_id                     = local.config_data.vpc_id
   app_name                   = local.config_data.app_name
+  iam_role                   = local.config_data.iam_role
   subnet_ids                 = local.config_data.subnet_ids
   aws_region                 = local.config_data.aws_region
   prefix_name                = local.config_data.prefix_name

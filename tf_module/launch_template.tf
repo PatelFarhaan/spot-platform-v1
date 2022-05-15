@@ -13,7 +13,7 @@ resource "aws_launch_template" "spot_launch_template" {
   }
 
   iam_instance_profile {
-    name = "r-aws-manager-role"
+    name = var.iam_role
   }
 
   metadata_options {

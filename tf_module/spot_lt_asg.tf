@@ -12,7 +12,7 @@ resource "aws_autoscaling_group" "spot_autoscaling_group" {
     instances_distribution {
       on_demand_base_capacity                  = 0
       on_demand_percentage_above_base_capacity = 0
-      spot_allocation_strategy                 = "capacity-optimized"
+      spot_allocation_strategy                 = "lowest-price"
     }
 
     launch_template {

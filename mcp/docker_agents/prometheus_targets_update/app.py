@@ -1,16 +1,13 @@
 # <==================================================================================================>
 #                                          IMPORTS
 # <==================================================================================================>
-import os
-import sys
 import json
-import yaml
-import boto3
-import requests
-from pprint import pprint
+from aws_services import AWS
 from flask_crontab import Crontab
 from flask import Flask, request, jsonify
-from botocore.exceptions import ClientError
+from file_functions import save_json, read_json
+from slack_notify import send_slack_notification
+from common_functions import get_instance_public_ip
 
 
 # <==================================================================================================>
@@ -18,91 +15,6 @@ from botocore.exceptions import ClientError
 # <==================================================================================================>
 app = Flask(__name__)
 crontab = Crontab(app)
-
-
-# <==================================================================================================>
-#                                          SEND SLACK NOTIFICATION
-# <==================================================================================================>
-def send_slack_notification(data={}, failed=False):
-    url = "***REMOVED***"
-
-    print(data, failed)
-    if failed:
-        title = "*PROMETHEUS UPDATE FAILED*"
-        links = "*LokiURL*: http://env-a-manager.***REMOVED***/d/liz0yRCZz/platform-logging?orgId=1&var-application=mcp&var-environment=staging&var-container=prometheus_target_update&var-search="
-    else:
-        topic_arn = data.get("TopicArn")
-        subscribe_url = data.get("SubscribeURL")
-        title = "*NEW SUBSCRIPTION*"
-        links = f"*TopicArn:* {topic_arn} \n*SubscribeURL:* {subscribe_url}"
-
-    slack_data = {
-        "username": "SpotOpsBot",
-        "icon_emoji": ":busstop:",
-        "blocks": [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"{title}"
-                }
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"{links}"
-                }
-            }
-        ]
-    }
-    byte_length = str(sys.getsizeof(slack_data))
-    headers = {'Content-Type': "application/json", 'Content-Length': byte_length}
-    try:
-        response = requests.post(url, data=json.dumps(slack_data), headers=headers)
-        if response.status_code == 200:
-            print("Success sending slack message!!!")
-        else:
-            print(f"Failed: {response.status_code}")
-    except Exception as e:
-        print("Failed sending slack message!!!", e)
-
-
-# <==================================================================================================>
-#                                          AWS CLIENT
-# <==================================================================================================>
-class AWS(object):
-    def __init__(self):
-        self.ec2 = "ec2"
-        self.autoscale = "autoscaling"
-        self.aws_region = os.getenv("AWS_REGION")
-        self.aws_profile = os.getenv("AWS_PROFILE")
-        self.session = boto3.Session(profile_name=self.aws_profile)
-        self.aws_config = {
-            "region_name": self.aws_region
-        }
-
-    @staticmethod
-    def connection_issue(client_name, e):
-        print(f"Facing issues connecting to: {client_name} client")
-        print(f"Code Exception is: {e.response['Error']['Code']}")
-        print(f"Error Message is: {e.response['Error']['Message']}")
-        print(f"Status Code is: {e.response['ResponseMetadata']['HTTPStatusCode']}")
-        sys.exit(1)
-
-    def get_autoscale_client(self):
-        try:
-            as_client = self.session.client(self.autoscale, **self.aws_config)
-            return as_client
-        except ClientError as e:
-            self.connection_issue("Autoscaling", e)
-
-    def get_ec2_client(self):
-        try:
-            ec2_client = self.session.client(self.ec2, **self.aws_config)
-            return ec2_client
-        except ClientError as e:
-            self.connection_issue("EC2", e)
 
 
 # <==================================================================================================>
@@ -121,28 +33,21 @@ def is_instance_launching(data):
 
 
 # <==================================================================================================>
-#                                     GET INSTANCE PUBLIC IP ADDRESS
-# <==================================================================================================>
-def get_instance_public_ip(instance_id):
-    print("Describe instance: ", instance_id)
-    aws_obj = AWS()
-    ec2_client = aws_obj.get_ec2_client()
-    response = ec2_client.describe_instances(
-        InstanceIds=[instance_id]
-    )
-    ipv4_address = response["Reservations"][0]["Instances"][0]["PublicIpAddress"]
-    return ipv4_address
-
-
-# <==================================================================================================>
 #                                      GET INSTANCE ENVIRONMENT
 # <==================================================================================================>
-def get_environment_details(asg_name):
-    data = read_json(env_ins_mapping_fn)
+def update_environment_details(asg_name, instance_id):
+    metadata = read_json(metadata_file)
+    ipv4_address = get_instance_public_ip(instance_id)
 
-    if data.get(asg_name):
-        return data[asg_name][0], data[asg_name][1]
+    if metadata.get(asg_name):
+        print("DEBUG: Instance metadata present!!!")
+        environment = metadata[asg_name]["environment"]
+        application_name = metadata[asg_name]["application_name"]
+        metadata[asg_name]["instances"][instance_id] = ipv4_address
+        save_json(metadata_file, metadata)
+        return environment, application_name, ipv4_address
 
+    print("DEBUG: Instance metadata is not present!!!")
     aws_obj = AWS()
     env = app_name = None
     as_client = aws_obj.get_autoscale_client()
@@ -160,108 +65,88 @@ def get_environment_details(asg_name):
         if tags["Key"] == "Application":
             app_name = tags["Value"]
 
-    data[asg_name] = [env, app_name]
-    save_json(env_ins_mapping_fn, data)
-    return env, app_name
+    metadata[asg_name] = {}
+    metadata[asg_name]["instances"] = {}
+    metadata[asg_name]["environment"] = env
+    metadata[asg_name]["application_name"] = app_name
+    metadata[asg_name]["instances"][instance_id] = ipv4_address
+    save_json(metadata_file, metadata)
+    return env, app_name, ipv4_address
 
 
 # <==================================================================================================>
-#                                  UPDATE INSTANCE DETAILS IN PROMETHEUS
+#                                  UPDATE PROMETHEUS FILE
 # <==================================================================================================>
-def update_instance_details(data, is_launch, environment, ipv4_address, application_name):
-    for index1, sc in enumerate(data["scrape_configs"]):
-        if sc.get("job_name") == "worker-metrics":
-            for index2, config in enumerate(sc["static_configs"]):
-                if config.get("labels", {}).get("environment") == environment and \
-                        config.get("labels", {}).get("application") == application_name:
-                    if is_launch:
-                        if f"{ipv4_address}:9100" in data["scrape_configs"][index1]["static_configs"][index2]["targets"]:
-                            return
-                        else:
-                            ip_list = [f"{ipv4_address}:9100", f"{ipv4_address}:8080", f"{ipv4_address}:9113"]
-                            data["scrape_configs"][index1]["static_configs"][index2]["targets"].extend(ip_list)
-                            return
-                    else:
-                        if f"{ipv4_address}:9100" not in data["scrape_configs"][index1]["static_configs"][index2]["targets"]:
-                            return
-                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(
-                            f"{ipv4_address}:9100")
-                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(
-                            f"{ipv4_address}:8080")
-                        data["scrape_configs"][index1]["static_configs"][index2]["targets"].remove(
-                            f"{ipv4_address}:9113")
-                        return
+def update_target_file(add_target: bool, data: dict):
+    target_found = False
+    targets_data = read_json(targets_file)
+    environment = data["environment"]
+    ipv4_address = data["instance_ipv4"]
+    application_name = data["application_name"]
+    instance_metadata_list = [
+        f"{ipv4_address}:8080",
+        f"{ipv4_address}:9100",
+        f"{ipv4_address}:9113",
+        f"{ipv4_address}:4040"
+    ]
 
-            new_app_entry = {
-                'labels':
-                    {
-                        'application': application_name,
-                        'environment': environment
-                    },
-                'targets': [
-                    f"{ipv4_address}:9100",
-                    f"{ipv4_address}:8080"
-                    f"{ipv4_address}:9113"
-                ]
+    for index, application in enumerate(targets_data):
+        if application["labels"]["application"] == application_name and \
+                application["labels"]["environment"] == environment:
+            if add_target:
+                target_found = True
+                targets_data[index]["targets"].extend(instance_metadata_list)
+            else:
+                for instance in instance_metadata_list:
+                    if instance in targets_data[index]["targets"]:
+                        targets_data[index]["targets"].remove(instance)
+        break
+
+    if add_target and not target_found:
+        new_target = {
+            "targets": instance_metadata_list,
+            "labels": {
+                "environment": environment,
+                "application": application_name
             }
-            sc["static_configs"].append(new_app_entry)
-
-
-# <==================================================================================================>
-#                                    CHECK IF INSTANCE IS PRESENT IN JSON
-# <==================================================================================================>
-def check_instance_is_present(instance_id, launch):
-    data = read_json(instanceid_ip_fn)
-    if launch:
-        if instance_id in data:
-            return True
-    else:
-        if instance_id not in data:
-            return True
-    return False
-
-
-# <==================================================================================================>
-#                                    SAVE INSTANCE IP ADDRESS IN JSON
-# <==================================================================================================>
-def save_instance_ip_mapping(instance_id, save_object):
-    data = read_json(instanceid_ip_fn)
-    data[instance_id] = save_object
-    save_json(instanceid_ip_fn, data)
-
-
-# <==================================================================================================>
-#                                          UPDATE PROMETHEUS FILE
-# <==================================================================================================>
-def update_prometheus_file(data):
-    is_launch, instance_id, asg_name = is_instance_launching(data)
-
-    if check_instance_is_present(instance_id, is_launch):
-        return jsonify({}), 200
-
-    if is_launch:
-        environment, application_name = get_environment_details(asg_name)
-        ipv4_address = get_instance_public_ip(instance_id)
-        save_obj = {
-            "environment": environment,
-            "ipv4_address": ipv4_address,
-            "application_name": application_name
         }
-        save_instance_ip_mapping(instance_id, save_obj)
+        targets_data.append(new_target)
+
+    save_json(targets_file, targets_data)
+
+
+# <==================================================================================================>
+#                                          PROCESS DATA
+# <==================================================================================================>
+def process_data(data):
+    instance_data = dict()
+    new_target, instance_id, asg_name = is_instance_launching(data)
+
+    if new_target:
+        print(f"DEBUG: A new instance is registered: {instance_id}")
+        environment, application_name, ipv4_address = update_environment_details(asg_name, instance_id)
+        instance_data["environment"] = environment
+        instance_data["instance_ipv4"] = ipv4_address
+        instance_data["application_name"] = application_name
+        update_target_file(new_target, instance_data)
     else:
-        data = read_json(instanceid_ip_fn)
-        instance_details = data.pop(instance_id)
-        environment = instance_details["environment"]
-        ipv4_address = instance_details["ipv4_address"]
-        application_name = instance_details["application_name"]
-        save_json(instanceid_ip_fn, data)
+        metadata = read_json(metadata_file)
+        if asg_name not in metadata:
+            print("DEBUG: Target is not present in the config!!!")
+            return
 
-    with open(prometheus_file_name) as rf:
-        data = yaml.load(rf, Loader=yaml.FullLoader)
-        update_instance_details(data, is_launch, environment, ipv4_address, application_name)
+        print(f"DEBUG: An instance is getting de-registered: {instance_id}")
+        environment = metadata[asg_name]["environment"]
+        application_name = metadata[asg_name]["application_name"]
+        ipv4_address = metadata[asg_name]["instances"][instance_id]
+        metadata[asg_name]["instances"].pop(instance_id)
+        save_json(metadata_file, metadata)
 
-    with open(prometheus_file_name, "w") as wf:
-        yaml.dump(data, wf)
+        instance_data["environment"] = environment
+        instance_data["instance_ipv4"] = ipv4_address
+        instance_data["application_name"] = application_name
+
+        update_target_file(new_target, instance_data)
 
 
 # <==================================================================================================>
@@ -269,57 +154,24 @@ def update_prometheus_file(data):
 # <==================================================================================================>
 @app.route("/webhook/instance-modification", methods=["POST"])
 def sns_notification():
-    try:
-        data = json.loads(request.get_data())
-        pprint(f"Data -> {data}")
-        if data.get("Type") == "SubscriptionConfirmation":
-            send_slack_notification(data=data)
-        else:
-            update_prometheus_file(data)
-            reload_prometheus()
-    except Exception as e:
-        print(f"Something went wrong: {e}")
-        send_slack_notification(failed=True)
+    # try:
+    data = json.loads(request.get_data())
+    print(f"DEBUG: Data -> {data}")
+    if data.get("Type") == "SubscriptionConfirmation":
+        send_slack_notification(data=data)
+    else:
+        process_data(data)
+    # except Exception as e:
+    #     print(f"DEBUG: Data is: {request.get_data()}")
+    #     print(f"DEBUG: Something went wrong: {e}")
+    #     send_slack_notification(failed=True)
     return jsonify({}), 200
-
-
-# <==================================================================================================>
-#                                          ROUTE ENDPOINT
-# <==================================================================================================>
-def reload_prometheus():
-    requests.post('http://prometheus:9090/-/reload')
-
-
-# <==================================================================================================>
-#                                          ROUTE ENDPOINT
-# <==================================================================================================>
-@app.route("/webhook/server-health")
-def health_check():
-    return jsonify({"status": "OK"})
-
-
-# <==================================================================================================>
-#                                          READ JSON
-# <==================================================================================================>
-def read_json(filename):
-    with open(filename, 'r') as openfile:
-        data = json.load(openfile)
-    return data
-
-
-# <==================================================================================================>
-#                                          SAVE JSON
-# <==================================================================================================>
-def save_json(filename, data):
-    with open(filename, "w") as outfile:
-        json.dump(data, outfile, indent=4)
 
 
 # <==================================================================================================>
 #                                         MAIN FUNCTION
 # <==================================================================================================>
 if __name__ == '__main__':
-    env_ins_mapping_fn = "/data/environment_instance_mapping.json"
-    instanceid_ip_fn = "/data/instanceid_ip_mapping.json"
-    prometheus_file_name = "/data/prometheus.yml"
+    metadata_file = "/data/metadata.json"
+    targets_file = "/data/app_nodes.json"
     app.run(host="0.0.0.0", port=5000)

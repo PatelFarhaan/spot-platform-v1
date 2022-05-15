@@ -39,4 +39,4 @@ scrape_configs:
         target_label: instance
     file_sd_configs:
       - files:
-          - 'app_nodes.json'
+        - 'app_nodes.json'

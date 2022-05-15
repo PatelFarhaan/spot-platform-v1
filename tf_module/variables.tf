@@ -10,6 +10,7 @@ variable "tags" {
 
 variable "app_name" {}
 
+variable "iam_role" {}
 
 variable "aws_region" {}
 
@@ -36,10 +37,10 @@ variable "sns_subscriptions_metadata" {
   type = list(map(string))
 }
 
-
 variable "spot_instance_type" {
   type = list(string)
 }
+
 
 variable "spot_asg_min_instances" {}
 
