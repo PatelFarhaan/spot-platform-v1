@@ -18,3 +18,9 @@ datasources:
     basicAuth: false
     isDefault: false
     editable: true
+
+  - name: CloudWatch
+    type: cloudwatch
+    jsonData:
+      authType: default
+      defaultRegion: us-east-1

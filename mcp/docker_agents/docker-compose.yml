@@ -1,0 +1,226 @@
+version: "3.8"
+
+networks:
+  spotops_monitoring:
+
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: "prometheus"
+    volumes:
+      - spotops-prometheus:/prometheus:rw
+      - ./prometheus/mcp.json:/etc/prometheus/mcp.json:ro
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/target_files/app_nodes.json:/etc/prometheus/app_nodes.json:ro
+    ports:
+      - "9090:9090"
+    user: root
+    restart: always
+    labels:
+      org.label-schema.group: "master_node"
+    command:
+      --web.enable-lifecycle
+      --storage.tsdb.retention.time=7d
+      --config.file=/etc/prometheus/prometheus.yml
+    networks:
+      - spotops_monitoring
+
+  alertmanager:
+    image: prom/alertmanager:v0.23.0
+    container_name: alertmanager
+    restart: always
+    ports:
+      - "9093:9093"
+    labels:
+      org.label-schema.group: "master_node"
+    volumes:
+      - spotops-alertmanager:/data:rw
+      - ./alert_manager/alertmanager.yml:/config/alertmanager.yml:ro
+    command: --config.file=/config/alertmanager.yml --log.level=debug
+    networks:
+      - spotops_monitoring
+
+  loki:
+    image: grafana/loki:2.4.0
+    container_name: "loki"
+    volumes:
+      - spotops-loki:/data/loki:rw
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+    ports:
+      - "3100:3100"
+    restart: always
+    environment:
+      - "HOSTNAME=mcp"
+      - "ENV=development"
+      - "APPLICATION=mcp"
+    labels:
+      org.label-schema.group: "master_node"
+    command: -config.file=/etc/loki/loki-config.yml
+    networks:
+      - spotops_monitoring
+
+  grafana:
+    image: grafana/grafana
+    container_name: "grafana"
+    user: root
+    volumes:
+      - spotops-grafana:/var/lib/grafana:rw
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      - "GF_INSTALL_PLUGINS=grafana-worldmap-panel,grafana-polystat-panel,novatec-sdg-panel,macropower-analytics-panel"
+    ports:
+      - "3000:3000"
+    restart: always
+    labels:
+      org.label-schema.group: "master_node"
+    networks:
+      - spotops_monitoring
+
+  prometheus_targets_update:
+    build:
+      context: ./prometheus_targets_update
+      dockerfile: Dockerfile
+    container_name: prometheus_targets_update
+    ports:
+      - "5000:5000"
+    restart: always
+    logging:
+      driver: loki
+      options:
+        loki-url: http://env-a-manager.***REMOVED***/loki/api/v1/push
+        loki-external-labels: application=mcp,container_name=prometheus_target_update,spot_app_id=ptu01,environment=staging
+    labels:
+      org.label-schema.group: "master_node"
+    volumes:
+      - ./prometheus/target_files/metadata.json:/data/metadata.json:rw
+      - ./prometheus/target_files/app_nodes.json:/data/app_nodes.json:rw
+    environment:
+      - AWS_REGION=us-east-1
+    networks:
+      - spotops_monitoring
+
+  cadvisor:
+    image: 'google/cadvisor:latest'
+    container_name: cadvisor
+    restart: always
+    labels:
+      org.label-schema.group: "master_node"
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/run:/var/run:ro
+      - /dev/disk:/dev/disk/:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8082:8080"
+    networks:
+      - spotops_monitoring
+
+  promtail:
+    image: grafana/promtail:2.4.0
+    container_name: promtail
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    ports:
+      - "1514:1514"
+    restart: always
+    labels:
+      org.label-schema.group: "master_node"
+    command:
+      -config.expand-env=true
+      -config.file=/etc/promtail/promtail-config.yml
+    environment:
+      - ENV=production
+      - HOSTNAME=master-node
+      - APPLICATION=monitoting-control-plane
+    networks:
+      - spotops_monitoring
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    restart: always
+    labels:
+      org.label-schema.group: "master_node"
+    pid: "host"
+    ports:
+      - "9100:9100"
+    networks:
+      - spotops_monitoring
+
+  jenkins:
+    build:
+        context: ./custom_jenkins_image/
+        dockerfile: Dockerfile
+    container_name: jenkins
+    privileged: true
+    restart: always
+    labels:
+      org.label-schema.group: "master_node"
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - spotops-jenkins:/var/jenkins_home:rw
+    networks:
+      - spotops_monitoring
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    labels:
+      org.label-schema.group: "master_node"
+    ports:
+      - "80:80"
+      - "8008:8080"
+    logging:
+      driver: loki
+      options:
+        loki-url: http://env-a-manager.***REMOVED***/loki/api/v1/push
+        loki-external-labels: application=mcp,container_name=nginx,spot_app_id=nginx01,environment=staging
+    volumes:
+      - spotops-nginx-logs:/var/log/nginx:rw
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - spotops_monitoring
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:0.10.0
+    container_name: nginx_exporter
+    restart: always
+    labels:
+      org.label-schema.group: "master_node"
+    command:
+      -nginx.scrape-uri=http://nginx:8080/stub_status
+    ports:
+      - "9113:9113"
+    networks:
+      - spotops_monitoring
+
+  nginx_request_exporter:
+    image: quay.io/martinhelmich/prometheus-nginxlog-exporter
+    container_name: nginx_request_exporter
+    restart: always
+    command:
+      - /mnt/nginxlogs/_data/access.log
+    volumes:
+      - spotops-nginx-logs:/mnt/nginxlogs:ro
+    depends_on:
+      - nginx
+    ports:
+      - "4040:4040"
+    networks:
+      - spotops_monitoring
+
+volumes:
+  spotops-loki:
+  spotops-grafana:
+  spotops-jenkins:
+  spotops-prometheus:
+  spotops-nginx-logs:
+  spotops-alertmanager:
