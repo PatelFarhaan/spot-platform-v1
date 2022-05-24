@@ -1,13 +1,4 @@
 // Add this file to /etc/docker/daemon.json
-
-// Make sure to first run loki container before creating this file
-//{
-//    "log-driver": "loki",
-//    "log-opts": {
-//        "loki-url": "http://localhost:3100/loki/api/v1/push",
-//        "loki-batch-size": "400"
-//    }
-//}
 {
    "experimental":true,
    "metrics-addr":"0.0.0.0:9323",
@@ -23,14 +14,4 @@
    "log-opts": {
       "tag": "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
    }
-}
-
-// Loki default config
-{
-    "debug" : true,
-    "log-driver": "loki",
-    "log-opts": {
-        "loki-url": "http://env-a-manager.***REMOVED***/loki/api/v1/push",
-        "loki-batch-size": "300"
-    }
 }

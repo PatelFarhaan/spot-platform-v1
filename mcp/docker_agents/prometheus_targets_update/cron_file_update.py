@@ -11,7 +11,7 @@ from common_functions import get_instance_public_ip
 #                                      DOWNLOAD ALB FILE FROM S3
 # <==================================================================================================>
 def download_alb_file_from_s3():
-    os.system(f"cd {download_path} && aws s3 cp s3://spot-platform/docker-agents/{alb_filename} ./")
+    os.system(f"cd {download_path} && aws s3 cp s3://spot-platform/docker-agents/excludes/{alb_filename} ./")
 
 
 # <==================================================================================================>

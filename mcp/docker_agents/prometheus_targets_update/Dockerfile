@@ -5,19 +5,26 @@ EXPOSE 5000
 WORKDIR /application
 
 RUN apt update && apt upgrade -y
+RUN apt install awscli -y
 RUN apt install cron vim -y
 RUN python3 -m pip install --upgrade pip
+
+COPY requirements.txt /application
+RUN pip3 install -r requirements.txt
 
 COPY app.py /application
 COPY aws_services.py /application
 COPY aws_services.py /application
 COPY slack_notify.py /application
-COPY requirements.txt /application
 COPY file_functions.py /application
 COPY common_functions.py /application
-COPY create_cron_task.sh /application
+COPY cron_file_update.py /application
 
-RUN pip3 install -r requirements.txt
-#RUN bash create_cron_task.sh
+COPY target_update_cron /etc/cron.d/target_update_cron
+RUN chmod 0644 /etc/cron.d/target_update_cron
+RUN crontab  /etc/cron.d/target_update_cron
+RUN touch /var/log/cron.log
+RUN cron
 
+RUN #crontab -l | { cat; echo "*/30 * * * * python3 /application/cron_file_update.py"; } | crontab -
 CMD ["python3", "app.py"]
