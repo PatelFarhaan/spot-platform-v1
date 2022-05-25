@@ -1,5 +1,6 @@
 #! /bin/bash
 
+export DEBIAN_FRONTEND=noninteractive
 sudo apt update &&
 sudo apt upgrade -y &&
 sudo apt install apt-transport-https ca-certificates curl software-properties-common -y &&
@@ -12,7 +13,6 @@ sudo curl -L "https://github.com/docker/compose/releases/download/1.28.5/docker-
 sudo chmod +x /usr/local/bin/docker-compose &&
 sudo systemctl restart docker.socket docker.service &&
 sudo usermod -aG docker ${USER}
-sudo su - ${USER}
 
 sudo apt install ec2-instance-connect -y
 rm -rf local-exec-script.sh ami.pkr.hcl

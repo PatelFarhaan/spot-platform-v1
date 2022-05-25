@@ -10,6 +10,8 @@ variable "tags" {
 
 variable "app_name" {}
 
+variable "platform" {}
+
 variable "iam_role" {}
 
 variable "aws_region" {}
@@ -31,7 +33,9 @@ variable "alb_security_group" {}
 
 variable "asg_availability_zones" {}
 
-variable "instance_security_group" {}
+variable "instance_security_group_sg" {}
+
+variable "instance_security_group_cidr" {}
 
 variable "sns_subscriptions_metadata" {
   type = list(map(string))

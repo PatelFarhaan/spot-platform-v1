@@ -15,16 +15,12 @@ services:
     container_name: "prometheus"
     volumes:
       - spotops-prometheus:/prometheus:rw
-      - ./prometheus/mcp.json:/etc/prometheus/mcp.json:ro
       - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/target_files/app_nodes.json:/etc/prometheus/app_nodes.json:ro
     ports:
       - "9090:9090"
     user: root
     restart: always
-    labels:
-      org.label-schema.group: "master_node"
     command:
       --web.enable-lifecycle
       --storage.tsdb.retention.time=7d
@@ -38,8 +34,6 @@ services:
     restart: always
     ports:
       - "9093:9093"
-    labels:
-      org.label-schema.group: "master_node"
     volumes:
       - spotops-alertmanager:/data:rw
       - ./alert_manager/alertmanager.yml:/config/alertmanager.yml:ro
@@ -60,8 +54,6 @@ services:
       - "HOSTNAME=mcp"
       - "ENV=development"
       - "APPLICATION=mcp"
-    labels:
-      org.label-schema.group: "master_node"
     command: -config.file=/etc/loki/loki-config.yml
     networks:
       - spotops_monitoring
@@ -79,27 +71,6 @@ services:
     ports:
       - "3000:3000"
     restart: always
-    labels:
-      org.label-schema.group: "master_node"
-    networks:
-      - spotops_monitoring
-
-  prometheus_targets_update:
-    build:
-      context: ./prometheus_targets_update
-      dockerfile: Dockerfile
-    container_name: prometheus_targets_update
-    ports:
-      - "5000:5000"
-    restart: always
-    logging: *default-logging
-    labels:
-      org.label-schema.group: "master_node"
-    volumes:
-      - ./prometheus/target_files/metadata.json:/data/metadata.json:rw
-      - ./prometheus/target_files/app_nodes.json:/data/app_nodes.json:rw
-    environment:
-      - AWS_REGION=us-east-1
     networks:
       - spotops_monitoring
 
@@ -107,8 +78,6 @@ services:
     image: gcr.io/cadvisor/cadvisor
     container_name: cadvisor
     restart: always
-    labels:
-      org.label-schema.group: "master_node"
     volumes:
       - /:/rootfs:ro
       - /sys:/sys:ro
@@ -129,8 +98,6 @@ services:
     ports:
       - "1514:1514"
     restart: always
-    labels:
-      org.label-schema.group: "master_node"
     command:
       -config.expand-env=true
       -config.file=/etc/promtail/promtail-config.yml
@@ -145,8 +112,6 @@ services:
     image: quay.io/prometheus/node-exporter:latest
     container_name: node_exporter
     restart: always
-    labels:
-      org.label-schema.group: "master_node"
     pid: "host"
     ports:
       - "9100:9100"
@@ -160,8 +125,6 @@ services:
     container_name: jenkins
     privileged: true
     restart: always
-    labels:
-      org.label-schema.group: "master_node"
     ports:
       - "8081:8080"
       - "50000:50000"
@@ -176,8 +139,6 @@ services:
     image: nginx
     container_name: nginx
     restart: always
-    labels:
-      org.label-schema.group: "master_node"
     ports:
       - "80:80"
       - "8008:8080"
@@ -193,8 +154,6 @@ services:
     image: nginx/nginx-prometheus-exporter:0.10.0
     container_name: nginx_exporter
     restart: always
-    labels:
-      org.label-schema.group: "master_node"
     command:
       -nginx.scrape-uri=http://nginx:8080/stub_status
     ports:

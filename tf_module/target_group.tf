@@ -11,8 +11,8 @@ resource "aws_alb_target_group" "alb_target_group" {
   }
 
   health_check {
-    unhealthy_threshold = 10
     healthy_threshold   = 2
+    unhealthy_threshold = 10
     timeout             = 120
     interval            = 300
     enabled             = true

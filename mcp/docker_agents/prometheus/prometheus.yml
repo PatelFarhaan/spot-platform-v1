@@ -23,20 +23,35 @@ scrape_configs:
         source_labels:
           - __address__
         target_label: instance
-    file_sd_configs:
-      - files:
-          - 'mcp.json'
+    static_configs:
+      - labels:
+          application: mcp
+          environment: production
+        targets:
+          - cadvisor:8080
+          - node_exporter:9100
+          - nginx_exporter:9113
+          - nginx_request_exporter:4040
 
   - job_name: application-nodes
     scheme: http
     metrics_path: /metrics
     relabel_configs:
-      - action: replace
-        regex: ([^:]+)(:[0-9]+)?
-        replacement: ${1}
-        source_labels:
-          - __address__
+      - source_labels: [ __meta_ec2_tag_Name ]
+        regex: rfmesh.*
+        action: keep
+      - source_labels: [ __meta_ec2_instance_id ]
         target_label: instance
-    file_sd_configs:
-      - files:
-        - 'app_nodes.json'
+      - source_labels: [ __meta_ec2_tag_Application ]
+        target_label: application
+      - source_labels: [ __meta_ec2_tag_Environment ]
+        target_label: environment
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9100
+      - region: us-east-1
+        port: 8080
+      - region: us-east-1
+        port: 9113
+      - region: us-east-1
+        port: 4040

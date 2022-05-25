@@ -22,12 +22,13 @@ resource "aws_security_group" "alb_security_group" {
 
   dynamic "ingress" {
     for_each = var.alb_security_group
+
     content {
-      to_port          = lookup(ingress.value, "to_port")
-      protocol         = lookup(ingress.value, "protocol")
-      from_port        = lookup(ingress.value, "from_port")
-      description      = lookup(ingress.value, "description")
-      cidr_blocks      = lookup(ingress.value, "cidr_blocks")
+      to_port     = lookup(ingress.value, "to_port")
+      protocol    = lookup(ingress.value, "protocol")
+      from_port   = lookup(ingress.value, "from_port")
+      description = lookup(ingress.value, "description")
+      cidr_blocks = lookup(ingress.value, "cidr_blocks")
     }
   }
 
@@ -51,18 +52,31 @@ resource "aws_security_group" "instance_security_group" {
   name        = "${var.app_name}-${var.env}-instance-tf"
 
   dynamic "ingress" {
-    for_each = var.instance_security_group
+    for_each = var.instance_security_group_cidr
+
     content {
-      to_port          = lookup(ingress.value, "to_port")
-      protocol         = lookup(ingress.value, "protocol")
-      from_port        = lookup(ingress.value, "from_port")
-      description      = lookup(ingress.value, "description")
-      cidr_blocks      = lookup(ingress.value, "cidr_blocks")
+      to_port     = ingress.value.to_port
+      protocol    = ingress.value.protocol
+      from_port   = ingress.value.from_port
+      description = ingress.value.description
+      cidr_blocks = ingress.value.cidr_blocks
+    }
+  }
+
+  dynamic "ingress" {
+    for_each = var.instance_security_group_sg
+
+    content {
+      to_port         = ingress.value.to_port
+      protocol        = ingress.value.protocol
+      from_port       = ingress.value.from_port
+      description     = ingress.value.description
+      security_groups = ingress.value.security_groups
     }
   }
 
   ingress {
-    description     = "HTTP"
+    description     = "Traffic from ALB"
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
@@ -88,15 +102,15 @@ resource "aws_alb_listener" "alb_listeners_port_80" {
   protocol          = "HTTP"
   load_balancer_arn = aws_alb.load_balancer.arn
 
-#  default_action {
-#    type = "redirect"
-#
-#    redirect {
-#      port        = "443"
-#      protocol    = "HTTPS"
-#      status_code = "HTTP_301"
-#    }
-#  }
+  #  default_action {
+  #    type = "redirect"
+  #
+  #    redirect {
+  #      port        = "443"
+  #      protocol    = "HTTPS"
+  #      status_code = "HTTP_301"
+  #    }
+  #  }
 
   default_action {
     type             = "forward"

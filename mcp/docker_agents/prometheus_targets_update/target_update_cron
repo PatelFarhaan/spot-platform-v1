@@ -1,1 +1,0 @@
-* * * * * python3 /application/cron_file_update.py >> /var/log/cron.log 2>&1

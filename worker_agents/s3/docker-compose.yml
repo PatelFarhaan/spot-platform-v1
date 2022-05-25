@@ -3,87 +3,83 @@ version: "3"
 networks:
   spotops_monitoring:
 
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+
 services:
-#  promtail:
-#    image: grafana/promtail:2.4.0
-#    container_name: promtail
-#    volumes:
-#      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-#      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
-#    ports:
-#      - "1514:1514"
-#    restart: always
-#    command:
-#      -config.expand-env=true
-#      -config.file=/etc/promtail/promtail-config.yml
-#    env_file:
-#      - ./app_config/promtail.env
-#    networks:
-#      - spotops_monitoring
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 30M
-#    labels:
-#      org.label-schema.group: "spotops_monitoring"
-#
-#  node_exporter:
-#    image: quay.io/prometheus/node-exporter:latest
-#    container_name: node_exporter
-#    restart: always
-#    pid: "host"
-#    ports:
-#      - "9100:9100"
-#    networks:
-#      - spotops_monitoring
-#    command:
-#      - '--path.procfs=/host/proc'
-#      - '--path.rootfs=/rootfs'
-#      - '--path.sysfs=/host/sys'
-#      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-#    volumes:
-#      - /proc:/host/proc:ro
-#      - /sys:/host/sys:ro
-#      - /:/rootfs:ro
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 20M
-#    labels:
-#      org.label-schema.group: "spotops_monitoring"
-#
-#  cadvisor:
-#    image: gcr.io/cadvisor/cadvisor
-#    container_name: cadvisor
-#    restart: always
-#    privileged: true
-#    volumes:
-#      - /:/rootfs:ro
-#      - /sys:/sys:ro
-#      - /cgroup:/cgroup:ro
-#      - /var/run:/var/run:ro
-#      - /dev/disk:/dev/disk/:ro
-#      - /var/lib/docker/:/var/lib/docker:ro
-#    ports:
-#      - "8080:8080"
-#    networks:
-#      - spotops_monitoring
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 100M
-#    labels:
-#      org.label-schema.group: "spotops_monitoring"
-#
+  promtail:
+    image: grafana/promtail:2.4.0
+    container_name: promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+    ports:
+      - "1514:1514"
+    restart: always
+    command:
+      -config.expand-env=true
+      -config.file=/etc/promtail/promtail-config.yml
+    env_file:
+      - ./app_config/promtail.env
+    deploy:
+      resources:
+        limits:
+          memory: 30M
+    networks:
+      - spotops_monitoring
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    restart: always
+    pid: "host"
+    ports:
+      - "9100:9100"
+    networks:
+      - spotops_monitoring
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    deploy:
+      resources:
+        limits:
+          memory: 20M
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    container_name: cadvisor
+    restart: always
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /cgroup:/cgroup:ro
+      - /var/run:/var/run:ro
+      - /dev/disk:/dev/disk/:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - spotops_monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 100M
+
   nginx:
     image: nginx
     container_name: nginx
     restart: always
-    logging:
-      driver: loki
-      options:
-        loki-url: http://loki/loki/api/v1/push #change this
-        loki-external-labels: application=mcp,container_name=nginx,spot_app_id=nginx01,environment=staging
+    logging: *default-logging
     ports:
       - "80:80"
       - "8081:8081"
@@ -97,49 +93,41 @@ services:
       resources:
         limits:
           memory: 30M
-    labels:
-      org.label-schema.group: "spotops_monitoring"
 
-#  nginx_exporter:
-#    image: nginx/nginx-prometheus-exporter:0.10.0
-#    container_name: nginx_exporter
-#    restart: always
-#    command:
-#      -nginx.scrape-uri=http://nginx:8081/stub_status
-#    ports:
-#      - "9113:9113"
-#    networks:
-#      - spotops_monitoring
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 15M
-#    labels:
-#      org.label-schema.group: "spotops_monitoring"
-#
-#  nginx_request_exporter:
-#    image: quay.io/martinhelmich/prometheus-nginxlog-exporter
-#    container_name: nginx_request_exporter
-#    restart: always
-#    command:
-#      - /mnt/nginxlogs/_data/access.log
-#    volumes:
-#      - spotops-nginx-logs:/mnt/nginxlogs:ro
-#    depends_on:
-#      - nginx
-#    ports:
-#      - "4040:4040"
-#    networks:
-#      - spotops_monitoring
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:0.10.0
+    container_name: nginx_exporter
+    restart: always
+    command:
+      -nginx.scrape-uri=http://nginx:8081/stub_status
+    ports:
+      - "9113:9113"
+    networks:
+      - spotops_monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 15M
+
+  nginx_request_exporter:
+    image: quay.io/martinhelmich/prometheus-nginxlog-exporter
+    container_name: nginx_request_exporter
+    restart: always
+    command:
+      - /mnt/nginxlogs/_data/access.log
+    volumes:
+      - spotops-nginx-logs:/mnt/nginxlogs:ro
+    depends_on:
+      - nginx
+    ports:
+      - "4040:4040"
+    networks:
+      - spotops_monitoring
 
   main_application:
     image: ${CLIENT_APP_IMAGE}
     restart: always
-#    logging:
-#      driver: loki
-#      options:
-#        loki-url: http://loki/loki/api/v1/push #change this
-#        loki-external-labels: application=mcp,container_name=nginx,spot_app_id=nginx01,environment=staging
+    logging: *default-logging
     expose:
       - ${CLIENT_APP_PORT}
     env_file:
@@ -153,9 +141,6 @@ services:
       interval: 60s
       retries: 5
       timeout: 10s
-    labels:
-      reload.service: "true"
-      org.label-schema.group: "spotops_monitoring"
 
 volumes:
   spotops-nginx-logs:

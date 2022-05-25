@@ -58,11 +58,6 @@ resource "aws_autoscaling_group" "spot_autoscaling_group" {
   ],
   [
     {
-      key                 = "Name"
-      value               = "spot-${var.app_name}"
-      propagate_at_launch = true
-    },
-    {
       key                 = "Type"
       value               = "Spot"
       propagate_at_launch = true

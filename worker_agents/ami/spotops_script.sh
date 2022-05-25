@@ -34,7 +34,6 @@ sudo chmod +x /usr/local/bin/docker-compose &&
 sudo systemctl restart docker.socket docker.service &&
 sudo usermod -aG docker ${USER}
 sudo su - ${USER}
-echo "y" | sudo docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 
 echo "Installing S3-Fuse"
 sudo apt install automake autotools-dev fuse g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config -y
