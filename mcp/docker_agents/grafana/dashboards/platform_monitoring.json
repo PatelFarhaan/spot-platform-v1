@@ -27,8 +27,8 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 11074,
   "graphTooltip": 0,
-  "id": 35,
-  "iteration": 1652469397780,
+  "id": 45,
+  "iteration": 1653533468727,
   "links": [
     {
       "$$hashKey": "object:2300",
@@ -1508,8 +1508,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1651,8 +1650,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1733,8 +1731,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1831,8 +1828,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1955,8 +1951,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2099,8 +2094,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2211,8 +2205,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -2424,8 +2417,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2517,8 +2509,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2593,8 +2584,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2657,8 +2647,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2752,8 +2741,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2859,8 +2847,7 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -2950,8 +2937,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -3018,8 +3004,7 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -3109,8 +3094,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -3177,6 +3161,9 @@
           "uid": "t2WScBAnz"
         },
         "definition": "label_values(application)",
+        "error": {
+          "message": "Datasource t2WScBAnz was not found"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "Application",
@@ -3204,6 +3191,9 @@
           "uid": "t2WScBAnz"
         },
         "definition": "label_values({application=~\"$application\"},environment)",
+        "error": {
+          "message": "Datasource t2WScBAnz was not found"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "Environment",
@@ -3233,6 +3223,9 @@
           "uid": "t2WScBAnz"
         },
         "definition": "label_values({application=~\"$application\", environment=~\"$environment\"},instance)",
+        "error": {
+          "message": "Datasource t2WScBAnz was not found"
+        },
         "hide": 0,
         "includeAll": true,
         "label": "Instance",
@@ -3269,6 +3262,9 @@
           "uid": "t2WScBAnz"
         },
         "definition": "label_values(node_network_info{device!~'tap.*|veth.*|br.*|docker.*|virbr.*|lo.*|cni.*'},device)",
+        "error": {
+          "message": "Datasource t2WScBAnz was not found"
+        },
         "hide": 2,
         "includeAll": true,
         "label": "NIC",
@@ -3376,6 +3372,6 @@
   "timezone": "browser",
   "title": "Platform Monitoring",
   "uid": "xfpJB9FGza",
-  "version": 39,
+  "version": 2,
   "weekStart": ""
 }

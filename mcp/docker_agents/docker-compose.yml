@@ -64,6 +64,7 @@ services:
     user: root
     volumes:
       - spotops-grafana:/var/lib/grafana:rw
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini:ro
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
       - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
     environment:
