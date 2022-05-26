@@ -49,18 +49,27 @@ resource "aws_autoscaling_group" "spot_autoscaling_group" {
     }
   }
 
-  tags = concat([
-  for key, value in var.tags : {
-    key                 = key
-    value               = value
-    propagate_at_launch = true
-  }
-  ],
-  [
+  tags = concat(
+    [
+    for key, value in var.tags :
     {
-      key                 = "Type"
-      value               = "Spot"
+      key                 = key
+      value               = value
       propagate_at_launch = true
     }
-  ])
+    if key != "Name"
+    ],
+    [
+      {
+        key                 = "Type"
+        value               = "Spot"
+        propagate_at_launch = true
+      },
+      {
+        key                 = "Name"
+        value               = "${var.platform}-spot-${var.app_name}"
+        propagate_at_launch = true
+      }
+    ]
+  )
 }
