@@ -11,14 +11,14 @@ resource "aws_alb_target_group" "alb_target_group" {
   }
 
   health_check {
-    healthy_threshold   = 2
-    unhealthy_threshold = 10
-    timeout             = 120
-    interval            = 300
+    healthy_threshold   = 3
+    unhealthy_threshold = 5
+    timeout             = 10
+    interval            = 15
     enabled             = true
     protocol            = "HTTP"
     path                = "/ping"
-    matcher             = "200,403,404"
+    matcher             = "200"
     port                = "traffic-port"
   }
 

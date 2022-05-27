@@ -24,11 +24,11 @@ resource "aws_security_group" "alb_security_group" {
     for_each = var.alb_security_group
 
     content {
-      to_port     = lookup(ingress.value, "to_port")
-      protocol    = lookup(ingress.value, "protocol")
-      from_port   = lookup(ingress.value, "from_port")
-      description = lookup(ingress.value, "description")
-      cidr_blocks = lookup(ingress.value, "cidr_blocks")
+      to_port     = ingress.value.to_port
+      protocol    = ingress.value.protocol
+      from_port   = ingress.value.from_port
+      description = ingress.value.description
+      cidr_blocks = ingress.value.cidr_blocks
     }
   }
 

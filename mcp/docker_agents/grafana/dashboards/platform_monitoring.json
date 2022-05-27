@@ -28,7 +28,7 @@
   "gnetId": 11074,
   "graphTooltip": 0,
   "id": 48,
-  "iteration": 1653610323006,
+  "iteration": 1653612246572,
   "links": [
     {
       "$$hashKey": "object:2300",
@@ -1154,7 +1154,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(rate(node_network_transmit_bytes_total{application=~\"$application\", environment=~\"$environment\", instance=~\"$instance\", device=~\"$device\"}[$__interval])) + sum(rate(node_network_receive_bytes_total{application=~\"$application\", environment=~\"$environment\", instance=~\"$instance\", device=~\"$device\"}[$__interval])) ",
+          "expr": "sum(rate(node_network_transmit_bytes_total{application=~\"$application\", environment=~\"$environment\", instance=~\"$instance\", device=~\"$device\"}[2m])) + sum(rate(node_network_receive_bytes_total{application=~\"$application\", environment=~\"$environment\", instance=~\"$instance\", device=~\"$device\"}[2m])) ",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1776,8 +1776,8 @@
       {
         "current": {
           "selected": false,
-          "text": "redflag-api-lookup",
-          "value": "redflag-api-lookup"
+          "text": "redflag-social-lookup",
+          "value": "redflag-social-lookup"
         },
         "datasource": {
           "type": "prometheus",
@@ -1863,7 +1863,7 @@
       {
         "allFormat": "glob",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -1901,7 +1901,7 @@
         "auto_count": 100,
         "auto_min": "10s",
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "2m",
           "value": "2m"
         },
@@ -1983,6 +1983,6 @@
   "timezone": "browser",
   "title": "Platform Monitoring",
   "uid": "xfpJB9FGza",
-  "version": 1,
+  "version": 3,
   "weekStart": ""
 }
