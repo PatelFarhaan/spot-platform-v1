@@ -65,8 +65,8 @@ services:
     volumes:
       - spotops-grafana:/var/lib/grafana:rw
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini:ro
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:rw
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:rw
     environment:
       - "GF_INSTALL_PLUGINS=grafana-worldmap-panel,grafana-polystat-panel,novatec-sdg-panel,macropower-analytics-panel"
     ports:

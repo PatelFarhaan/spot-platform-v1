@@ -40,19 +40,15 @@ scrape_configs:
       - source_labels: [ __meta_ec2_tag_Name ]
         regex: 'rfmesh-.*'
         action: keep
-      - source_labels: [ __meta_ec2_instance_id ]
-        target_label: instance
-      - source_labels: [ __meta_ec2_tag_Application ]
-        regex: '(.|\s)*\S(.|\s)*'
-        target_label: application
-        action: keep
-      - source_labels: [ __meta_ec2_tag_Environment ]
-        regex: '(.|\s)*\S(.|\s)*'
-        target_label: environment
-        action: keep
       - source_labels: [ __meta_ec2_tag_MCP_SD ]
         regex: true
         action: keep
+      - source_labels: [ __meta_ec2_instance_id ]
+        target_label: instance
+      - source_labels: [ __meta_ec2_tag_Application ]
+        target_label: application
+      - source_labels: [ __meta_ec2_tag_Environment ]
+        target_label: environment
     ec2_sd_configs:
       - region: us-east-1
         port: 9100
