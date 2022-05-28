@@ -1,11 +1,11 @@
 #! /bin/bash
 
-# add a script also to restart when a file updates :=> shell script
-
 set -e -x
 
+application_path="/var/opt/spotops/agents"
+
 echo "Providing ubuntu permission to agents folder"
-sudo chown ubuntu:ubuntu -R /var/opt/spotops/agents
+sudo chown ubuntu:ubuntu -R ${application_path}
 
 echo "Running apt update and upgrade"
 export DEBIAN_FRONTEND=noninteractive
@@ -19,8 +19,9 @@ sudo apt update && sudo apt dist-upgrade -y
 echo "Installing AWS CLI"
 sudo apt install awscli -y
 
-echo "Installing Python3"
+echo "Installing Python3 and boto3"
 sudo apt install python3-pip -y
+sudo pip3 install boto3
 
 echo "Installing Docker"
 sudo apt install apt-transport-https ca-certificates curl software-properties-common -y &&
@@ -45,16 +46,13 @@ make
 sudo make install
 cd ./../ && sudo rm -rf ./s3fs-fuse
 
-echo '''
-#!/bin/bash
-
-no_of_cores=`nproc --all`
-APP_REPLICAS=$(( ($no_of_cores * 2) + 1 ))
-export APP_REPLICAS=$APP_REPLICAS
-
-export HOSTNAME=`curl http://169.254.169.254/latest/meta-data/instance-id`
-''' >> ./spotops_cloud_init.sh
-
+echo "Sourcing cloud-init-script"
 sudo chmod +x ./spotops_cloud_init.sh
 sudo mv ./spotops_cloud_init.sh /etc/profile.d/
 source /etc/profile.d/spotops_cloud_init.sh
+
+echo "Creating Cron for checking Disk Size"
+crontab -l > mycron
+echo "* * * * * python3 ${application_path}/cron_jobs/disk_size_check.py" >> mycron
+crontab mycron
+rm mycron

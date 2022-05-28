@@ -124,6 +124,14 @@ services:
     networks:
       - spotops_monitoring
 
+  cron_jobs:
+    build:
+      context: ./cron_jobs/
+      dockerfile: Dockerfile
+    container_name: cron_jobs
+    restart: always
+    logging: *default-logging
+
   main_application:
     image: ${CLIENT_APP_IMAGE}
     restart: always

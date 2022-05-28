@@ -27,8 +27,8 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 13639,
   "graphTooltip": 0,
-  "id": 13,
-  "iteration": 1652468686197,
+  "id": 51,
+  "iteration": 1653657610132,
   "links": [
     {
       "$$hashKey": "object:59",
@@ -56,101 +56,95 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "imfHcfA7k"
+        "uid": "${origin}"
       },
+      "description": "Total  Count of log lines in the specified time range",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 3,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "color": "rgb(31, 255, 7)",
+                  "text": "0"
+                }
+              },
+              "type": "special"
             }
-          },
-          "mappings": [],
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "rgb(31, 255, 7)",
                 "value": null
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "rgb(31, 255, 7)",
+                "value": 10
+              },
+              {
+                "color": "rgb(31, 255, 7)",
+                "value": 50
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 11,
+        "h": 6,
         "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 6,
+      "id": 8,
+      "links": [],
+      "maxDataPoints": 100,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "textMode": "auto"
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "8.5.2",
       "targets": [
         {
           "datasource": {
             "type": "loki",
-            "uid": "imfHcfA7k"
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "count_over_time({application=~\"$application\",environment=~\"$environment\", container_name=~\"$container\"} |= \"$search\" [$__interval])",
-          "legendFormat": "{{container_name}}",
+          "expr": "sum(count_over_time(({application=~\"$application\", environment=~\"$environment\", container_name=~\"$container\"})[$__interval]))",
+          "hide": false,
           "refId": "A"
         }
       ],
-      "title": "Log Stream",
-      "type": "timeseries"
+      "title": "Total  Count of logs",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "loki",
-        "uid": "imfHcfA7k"
+        "uid": "${origin}"
       },
       "gridPos": {
         "h": 25,
         "w": 24,
         "x": 0,
-        "y": 11
+        "y": 6
       },
       "id": 2,
       "maxDataPoints": "",
@@ -168,11 +162,10 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "imfHcfA7k"
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "{application=~\"$application\",environment=~\"$environment\", container_name=~\"$container\"} |= \"$search\"",
-          "hide": false,
-          "legendFormat": "",
+          "expr": "{application=~\"$application\", environment=~\"$environment\", container_name=~\"$container\"} |~ \"$search\"",
+          "queryType": "range",
           "refId": "A"
         }
       ],
@@ -190,12 +183,30 @@
       {
         "current": {
           "selected": false,
-          "text": "redflag-api-lookup",
-          "value": "redflag-api-lookup"
+          "text": "Loki",
+          "value": "Loki"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "label": "Origin",
+        "multi": false,
+        "name": "origin",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "redflag-service-lookup",
+          "value": "redflag-service-lookup"
         },
         "datasource": {
           "type": "loki",
-          "uid": "imfHcfA7k"
+          "uid": "${origin}"
         },
         "definition": "label_values(application)",
         "hide": 0,
@@ -216,13 +227,13 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "staging",
-          "value": "staging"
+          "selected": true,
+          "text": "production",
+          "value": "production"
         },
         "datasource": {
           "type": "loki",
-          "uid": "imfHcfA7k"
+          "uid": "${origin}"
         },
         "definition": "label_values({application=~\"$application\"}, environment)",
         "hide": 0,
@@ -245,15 +256,47 @@
         "current": {
           "selected": true,
           "text": [
-            "nginx"
+            "agents_main_application_13",
+            "agents_main_application_1",
+            "agents_main_application_17",
+            "agents_main_application_2",
+            "agents_main_application_7",
+            "agents_main_application_6",
+            "agents_main_application_9",
+            "agents_main_application_10",
+            "agents_main_application_14",
+            "agents_main_application_4",
+            "agents_main_application_3",
+            "agents_main_application_15",
+            "agents_main_application_12",
+            "agents_main_application_5",
+            "agents_main_application_11",
+            "agents_main_application_8",
+            "agents_main_application_16"
           ],
           "value": [
-            "nginx"
+            "agents_main_application_13",
+            "agents_main_application_1",
+            "agents_main_application_17",
+            "agents_main_application_2",
+            "agents_main_application_7",
+            "agents_main_application_6",
+            "agents_main_application_9",
+            "agents_main_application_10",
+            "agents_main_application_14",
+            "agents_main_application_4",
+            "agents_main_application_3",
+            "agents_main_application_15",
+            "agents_main_application_12",
+            "agents_main_application_5",
+            "agents_main_application_11",
+            "agents_main_application_8",
+            "agents_main_application_16"
           ]
         },
         "datasource": {
           "type": "loki",
-          "uid": "imfHcfA7k"
+          "uid": "${origin}"
         },
         "definition": "label_values({application=~\"$application\",environment=~\"$environment\"}, container_name)",
         "hide": 0,
@@ -312,6 +355,6 @@
   "timezone": "",
   "title": "Platform Logging",
   "uid": "liz0yRCZz",
-  "version": 28,
+  "version": 3,
   "weekStart": ""
 }

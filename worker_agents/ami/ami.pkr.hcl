@@ -34,30 +34,31 @@ build {
   ]
 
   provisioner "file" {
-    source      = "./spotops_script.sh"
+    source      = "./../ami"
     destination = "/tmp/"
   }
 
   provisioner "shell" {
     inline = [
       "sudo mkdir -p /var/opt/spotops/agents",
-      "sudo mv /tmp/spotops_script.sh /var/opt/spotops/agents/"
+      "sudo mv /tmp/ami/ /var/opt/spotops/agents/"
     ]
     environment_vars = [
-        "DEBIAN_FRONTEND=noninteractive"
+      "DEBIAN_FRONTEND=noninteractive"
     ]
   }
 
   provisioner "shell" {
-    script = "spotops_script.sh"
+    script           = "spotops_script.sh"
     environment_vars = [
-        "DEBIAN_FRONTEND=noninteractive"
+      "DEBIAN_FRONTEND=noninteractive"
     ]
   }
 
   provisioner "shell" {
     inline = [
-        "sudo rm -rf /var/opt/spotops/agents/spotops_script.sh"
+      "sudo rm -rf /var/opt/spotops/agents/ami.pkr.hcl",
+      "sudo rm -rf /var/opt/spotops/agents/spotops_script.sh"
     ]
   }
 
