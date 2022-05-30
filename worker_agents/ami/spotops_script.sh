@@ -50,9 +50,3 @@ echo "Sourcing cloud-init-script"
 sudo chmod +x ./spotops_cloud_init.sh
 sudo mv ./spotops_cloud_init.sh /etc/profile.d/
 source /etc/profile.d/spotops_cloud_init.sh
-
-echo "Creating Cron for checking Disk Size"
-crontab -l > mycron
-echo "* * * * * python3 ${application_path}/cron_jobs/disk_size_check.py" >> mycron
-crontab mycron
-rm mycron

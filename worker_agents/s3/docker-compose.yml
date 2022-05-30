@@ -131,6 +131,8 @@ services:
     container_name: cron_jobs
     restart: always
     logging: *default-logging
+    volumes:
+      - /dev/root:/dev/root
 
   main_application:
     image: ${CLIENT_APP_IMAGE}
