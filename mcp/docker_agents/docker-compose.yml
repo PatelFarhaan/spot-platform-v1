@@ -130,6 +130,7 @@ services:
       - "8081:8080"
       - "50000:50000"
     volumes:
+      - ./scaling:/scaling:ro
       - /usr/bin/docker:/usr/bin/docker
       - spotops-jenkins:/var/jenkins_home:rw
       - /var/run/docker.sock:/var/run/docker.sock

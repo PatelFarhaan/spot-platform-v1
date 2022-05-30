@@ -1,0 +1,15 @@
+pipeline {
+    agent any
+
+    stages {
+        stage("Test Application") {
+            steps {
+                script {
+                    sh """
+                    echo "Alhamdulillah"
+                    """
+                }
+            }
+        }
+    }
+}
