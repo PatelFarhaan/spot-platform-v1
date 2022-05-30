@@ -3,10 +3,12 @@
 # <==================================================================================================>
 import os
 import sys
+
 import requests
+
 from aws_services import AWS
-from scale_instances import scale_up, scale_down
 from common_utilities import perform_initial_checks
+from scale_instances import scale_up, scale_down
 
 
 # <==================================================================================================>
@@ -54,20 +56,25 @@ if __name__ == '__main__':
     memory_scale_up_threshold = int(os.getenv("memory_scale_up_threshold"))
     memory_scale_down_threshold = int(os.getenv("memory_scale_down_threshold"))
 
+    no_of_instances_to_add = 1
+    no_of_instances_to_remove = 1
+    asg_scale_up = asg_scale_down = False
+    filename = f"{application}_{environment}.json"
+
     variables = dict()
+    variables["filename"] = filename
     variables["aws_region"] = aws_region
     variables["environment"] = environment
     variables["application"] = application
     variables["prometheus_url"] = prometheus_url
     variables["min_od_instances"] = min_od_instances
     variables["min_spot_instances"] = min_spot_instances
+    variables["no_of_instances_to_add"] = no_of_instances_to_add
     variables["cpu_scale_up_threshold"] = cpu_scale_up_threshold
     variables["cpu_scale_down_threshold"] = cpu_scale_down_threshold
+    variables["no_of_instances_to_remove"] = no_of_instances_to_remove
     variables["memory_scale_up_threshold"] = memory_scale_up_threshold
     variables["memory_scale_down_threshold"] = memory_scale_down_threshold
-
-    asg_scale_up = asg_scale_down = False
-    filename = f"{application}_{environment}.json"
 
     # Aborting the program if any environemntal variable is missing
     for key, value in variables.items():
@@ -118,14 +125,20 @@ if __name__ == '__main__':
         if current_metric < scale_down_threshold:
             asg_scale_down = True
 
-    if asg_scale_up:
+    print(f"asg_scale_up: {asg_scale_up}")
+    print(f"asg_scale_down: {asg_scale_down}")
+
+    if (asg_scale_up and asg_scale_down) or (asg_scale_up and not asg_scale_down):
         scaling_kwargs = dict()
+        scaling_kwargs["variables"] = variables
         scaling_kwargs["asg_client"] = asg_client
         scaling_kwargs["asg_details"] = spot_asg_details
         scaling_kwargs["autoscale_group_name"] = spot_asg_details["AutoScalingGroupName"]
         scale_up(**scaling_kwargs)
-    elif asg_scale_down:
+
+    if asg_scale_down and not asg_scale_up:
         scaling_kwargs = dict()
+        scaling_kwargs["variables"] = variables
         scaling_kwargs["asg_client"] = asg_client
         scaling_kwargs["asg_details"] = spot_asg_details
         scaling_kwargs["autoscale_group_name"] = spot_asg_details["AutoScalingGroupName"]

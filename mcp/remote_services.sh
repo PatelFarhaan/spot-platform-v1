@@ -21,3 +21,9 @@ sudo docker-compose up -d --build
 sudo snap install amazon-ssm-agent --classic && sudo snap start amazon-ssm-agent
 
 #https://devopscube.com/docker-containers-as-build-slaves-jenkins/
+
+
+ls /usr/share/zoneinfo
+echo "America/New_York" | sudo tee /etc/timezone && sudo dpkg-reconfigure --frontend noninteractive tzdata
+
+sudo ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime

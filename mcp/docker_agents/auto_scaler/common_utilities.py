@@ -2,11 +2,13 @@
 #                                            IMPORTS
 # <==================================================================================================>
 import sys
-from dateutil import parser
 from datetime import datetime, timedelta
-from scale_instances import scale_up, scale_down
+
+from dateutil import parser
+
 from asg_apis import get_asg_names, get_asg_details
 from file_functions import read_json_file, save_json_file, create_a_file_if_does_not_exists
+from scale_instances import scale_up
 
 
 # <==================================================================================================>
@@ -42,7 +44,7 @@ def perform_initial_checks(**kwargs):
         save_json_file(filename, content)
 
     asg_names_update_ts = content["asg_names_update_ts"]
-    if if_timestamp_has_expired(asg_names_update_ts):
+    if timestamp_has_expired(asg_names_update_ts):
         print("Checking if Asg names has changed...")
 
         asg_names_update_mins = 15
@@ -55,17 +57,21 @@ def perform_initial_checks(**kwargs):
         "asg_client": asg_client
     }
 
+    cool_down_period_ts = content["cool_down_period_ts"]
+    print("Checking if Cooldown period is over...")
+    if not timestamp_has_expired(cool_down_period_ts):
+        string_to_dt = parser.parse(cool_down_period_ts)
+        will_expire_at = string_to_dt.strftime("%Y-%m-%d %H:%M:%S%z")
+        print(f"Cooldown period will expire at: {will_expire_at}. ASG cannot be modified!")
+        sys.exit(0)
+
     asg_details = satisfy_min_no_of_instances(**min_instances_kwargs)
     if asg_details == "asg_modified":
         # If the ASG is updated to satisfy min no of instances, the abort the program as asg should only be updated once
         print("ASG updated to satisfy minimum number of instances")
         sys.exit(0)
 
-    cool_down_period_ts = content["cool_down_period_ts"]
-    if not if_timestamp_has_expired(cool_down_period_ts):
-        print("Timestamp for updating ASG has not yet expired. Aborting program.")
-        sys.exit(0)
-
+    print("Cooldown period is over, ASG can be modified!")
     return asg_details
 
 
@@ -91,7 +97,9 @@ def satisfy_min_no_of_instances(**kwargs):
         scaling_kwargs = dict()
         scaling_kwargs["asg_client"] = asg_client
         scaling_kwargs["asg_details"] = od_asg_details
+        scaling_kwargs["variables"] = kwargs["variables"]
         scaling_kwargs["autoscale_group_name"] = od_asg_name
+        scaling_kwargs["variables"]["no_of_instances_to_add"] = min_od_instances - current_od_instances
         scale_up(**scaling_kwargs)
 
     if current_spot_instances < min_spot_instances:
@@ -99,7 +107,9 @@ def satisfy_min_no_of_instances(**kwargs):
         scaling_kwargs = dict()
         scaling_kwargs["asg_client"] = asg_client
         scaling_kwargs["asg_details"] = spot_asg_details
+        scaling_kwargs["variables"] = kwargs["variables"]
         scaling_kwargs["autoscale_group_name"] = spot_asg_name
+        scaling_kwargs["variables"]["no_of_instances_to_add"] = min_spot_instances - current_spot_instances
         scale_up(**scaling_kwargs)
 
     if modified_asg:
@@ -110,8 +120,9 @@ def satisfy_min_no_of_instances(**kwargs):
 # <==================================================================================================>
 #                                  CHECK IF TIMESTAMP HAS EXPIRED
 # <==================================================================================================>
-def if_timestamp_has_expired(timestamp):
+def timestamp_has_expired(timestamp):
     asg_timestamp = parser.parse(timestamp)
     if datetime.utcnow() > asg_timestamp:
         return True
     return False
+

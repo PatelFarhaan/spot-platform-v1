@@ -2,11 +2,13 @@ pipeline {
     agent any
 
     stages {
-        stage("Test Application") {
+        stage("Scaling Application") {
             steps {
                 script {
                     sh """
-                    echo "Alhamdulillah"
+                    cd /auto_scaler
+                    . venv/bin/activate
+                    python3 run.py
                     """
                 }
             }
