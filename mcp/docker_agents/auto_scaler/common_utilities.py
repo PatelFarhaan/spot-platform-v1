@@ -25,29 +25,32 @@ def perform_initial_checks(**kwargs):
     environment = kwargs["environment"]
     application = kwargs["application"]
 
+    asg_names_update_mins = 15
+    scale_up_cool_down_period_mins = 5
+    scale_down_cool_down_period_mins = 10
+
     create_a_file_if_does_not_exists(filename)
     content = read_json_file(filename)
 
     if not all(key in content for key in ["od_asg_name", "spot_asg_name"]):
-        cool_down_period_mins = 5
-        asg_names_update_mins = 15
         od_asg_name, spot_asg_name = get_asg_names(asg_client, application, environment)
 
         content["application"] = application
         content["environment"] = environment
         content["od_asg_name"] = od_asg_name
         content["spot_asg_name"] = spot_asg_name
-        content["cool_down_period_mins"] = cool_down_period_mins
         content["update_asg_names_in_mins"] = asg_names_update_mins
-        content["cool_down_period_ts"] = str(datetime.utcnow() + timedelta(minutes=cool_down_period_mins))
+        content["scale_up_cool_down_period_mins"] = scale_up_cool_down_period_mins
+        content["scale_down_cool_down_period_mins"] = scale_down_cool_down_period_mins
         content["asg_names_update_ts"] = str(datetime.utcnow() + timedelta(minutes=asg_names_update_mins))
+        content["scale_up_cool_down_period_ts"] = str(datetime.utcnow() + timedelta(minutes=scale_up_cool_down_period_mins))
+        content["scale_dowm_cool_down_period_ts"] = str(datetime.utcnow() + timedelta(minutes=scale_down_cool_down_period_mins))
         save_json_file(filename, content)
 
     asg_names_update_ts = content["asg_names_update_ts"]
     if timestamp_has_expired(asg_names_update_ts):
         print("Checking if Asg names has changed...")
 
-        asg_names_update_mins = 15
         content["asg_names_update_ts"] = str(datetime.utcnow() + timedelta(minutes=asg_names_update_mins))
         save_json_file(filename, content)
 
