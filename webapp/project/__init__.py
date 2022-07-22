@@ -14,9 +14,9 @@ from itsdangerous import URLSafeTimedSerializer
 # <==================================================================================================>
 #                                         CONFIG
 # <==================================================================================================>
+# TODO: GET CONFIG FROM A CONFIG FILE
+
 app = Flask(__name__)
-PASSWORD_RESET_LINK_AGE = 500
-CURRENT_SERVER = "http://localhost:5000/login"
 app.config['JWT_SECRET_KEY'] = "changemePlease"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=3)

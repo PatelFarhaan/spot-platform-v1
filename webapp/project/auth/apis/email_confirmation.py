@@ -3,8 +3,9 @@
 # <==================================================================================================>
 from flask import jsonify, abort
 from project import serial
-from project.auth.apis import auth_blueprint
 from project.models import Users
+
+from . import auth_blueprint
 
 
 # <==================================================================================================>

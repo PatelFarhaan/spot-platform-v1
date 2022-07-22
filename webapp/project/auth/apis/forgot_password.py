@@ -2,9 +2,10 @@
 #                                       IMPORTS
 # <==================================================================================================>
 from flask import request, jsonify, abort
-from project.auth.apis import auth_blueprint, generate_password
 from project.auth.json_schema_validation.forgot_password_validation import validate_forgot_password_schema
 from project.models import Users
+
+from . import auth_blueprint, generate_password
 
 
 # <==================================================================================================>

@@ -1,12 +1,14 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
+from common_utilities.emails.confirmation_email import email_confirmation
 from flask import url_for, request, jsonify
 from project import serial
-from project.auth.apis import auth_blueprint, send_email
 from project.auth.json_schema_validation.register_validation import validate_register_schema
 from project.models import Users
 from werkzeug.security import generate_password_hash
+
+from . import auth_blueprint, send_email
 
 
 # <==================================================================================================>
@@ -32,8 +34,6 @@ def register():
 
     token = serial.dumps(email, salt='email_confirm')
     link = url_for('auth.email_confirmed', token=token, _external=True)
-
-    # todo: create a function for this:
-    # send_email(target=email_confirmation, args=(new_user, link, input_request.get("first_name")))
+    send_email(target=email_confirmation, args=(new_user, link))
 
     return jsonify({"result": True, "msg": "user created"})

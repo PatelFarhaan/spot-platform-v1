@@ -3,7 +3,8 @@
 # <==================================================================================================>
 from flask import jsonify
 from flask_jwt_extended import jwt_required
-from project.auth.apis import auth_blueprint, check_if_user_is_logged_in
+
+from . import auth_blueprint, check_if_user_is_logged_in
 
 
 # <==================================================================================================>

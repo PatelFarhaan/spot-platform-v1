@@ -5,11 +5,12 @@ from flask import request, jsonify, url_for, abort
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_login import login_user
 from project import serial
-from project.auth.apis import auth_blueprint, send_email
 from project.auth.json_schema_validation.login_validation import validate_login_schema
 from project.auth.serializer.login_schema import LoginSchema
 from project.models import Users
 from werkzeug.security import check_password_hash
+
+from . import auth_blueprint
 
 
 # <==================================================================================================>

@@ -2,10 +2,11 @@
 #                                       IMPORTS
 # <==================================================================================================>
 from flask import request, jsonify, abort
-from project.auth.apis import auth_blueprint
 from project.auth.json_schema_validation.password_reset_validation import validate_password_reset_schema
 from project.models import Users
 from werkzeug.security import generate_password_hash
+
+from . import auth_blueprint
 
 
 # <==================================================================================================>

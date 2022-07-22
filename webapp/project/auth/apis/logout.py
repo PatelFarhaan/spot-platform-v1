@@ -3,7 +3,8 @@
 # <==================================================================================================>
 from flask import jsonify
 from flask_jwt_extended import jwt_required, current_user
-from project.auth.apis import auth_blueprint
+
+from . import auth_blueprint
 
 
 # <==================================================================================================>
