@@ -1,6 +1,7 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
+from common_utilities.emails.email_confirmation import send_email_confirmation
 from flask import request, jsonify, url_for, abort
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_login import login_user
@@ -10,7 +11,7 @@ from project.auth.serializer.login_schema import LoginSchema
 from project.models import Users
 from werkzeug.security import check_password_hash
 
-from . import auth_blueprint
+from . import auth_blueprint, send_email
 
 
 # <==================================================================================================>
@@ -34,9 +35,7 @@ def login():
         msg = "please confirm your email address"
         token = serial.dumps(email, salt='email_confirm')
         link = url_for('auth.email_confirmed', token=token, _external=True)
-
-        # todo: create email confirmation function
-        # send_email(target=email_confirmation, args=(user, link, user.first_name))
+        send_email(target=send_email_confirmation, args=(user, link))
         return jsonify({"result": True, "msg": msg})
 
     if user and check_password_hash(user.password, password):
