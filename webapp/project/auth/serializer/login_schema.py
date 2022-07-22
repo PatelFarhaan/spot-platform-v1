@@ -8,8 +8,8 @@ from flask_marshmallow import fields as fd
 # <==================================================================================================>
 #                                     INVESTOR USER SCHEMA
 # <==================================================================================================>
-class UserSchema(ma.Schema):
+class LoginSchema(ma.Schema):
     id = fd.fields.String()
 
     class Meta:
-        fields = ("first_name", "last_name", "email")
+        fields = ("first_name", "last_name", "email", "company", "position")

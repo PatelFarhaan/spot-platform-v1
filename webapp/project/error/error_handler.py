@@ -30,7 +30,7 @@ def error_404(e):
     print(e)
     return_obj = {
         "result": False,
-        "error": "page not found",
+        "error": "not found",
     }
     return jsonify(return_obj), 404
 
