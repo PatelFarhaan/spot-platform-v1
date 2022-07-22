@@ -17,22 +17,18 @@ def register():
     input_request = request.get_json()
     response = validate_register_schema(input_request)
 
-    if not response["result"]:
-        return jsonify(response)
-
     email = response["data"]["email"].lower()
     email_exist = Users.objects.filter(email=email).first()
 
     if email_exist:
-        print(f"auth: register: exists: {email}")
-        error = "email exists"
-        return jsonify({"result": False, "msg": error})
+        print(f"Auth: register: exists: {email}")
+        return jsonify({"result": False, "msg": "email exists"})
 
     input_request["password"] = generate_password_hash(input_request["password"])
     input_request["email"] = input_request["email"].lower()
     new_user = Users(**input_request)
     new_user.save()
-    print(f"auth: register: created {email}")
+    print(f"Auth: register: created {email}")
 
     token = serial.dumps(email, salt='email_confirm')
     link = url_for('auth.email_confirmed', token=token, _external=True)

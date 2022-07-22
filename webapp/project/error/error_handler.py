@@ -10,6 +10,19 @@ errorpage_blueprint = Blueprint('error', __name__)
 
 
 # <==================================================================================================>
+#                                     ERROR 400
+# <==================================================================================================>
+@errorpage_blueprint.app_errorhandler(400)
+def error_400(e):
+    print(e)
+    return_obj = {
+        "result": False,
+        "msg": e.description
+    }
+    return jsonify(return_obj), 400
+
+
+# <==================================================================================================>
 #                                     ERROR 403
 # <==================================================================================================>
 @errorpage_blueprint.app_errorhandler(403)
@@ -17,7 +30,7 @@ def error_403(e):
     print(e)
     return_obj = {
         "result": False,
-        "error": "forbidden access"
+        "msg": "forbidden access"
     }
     return jsonify(return_obj), 403
 
@@ -30,7 +43,7 @@ def error_404(e):
     print(e)
     return_obj = {
         "result": False,
-        "error": "not found",
+        "msg": e.description if e.description else "not found",
     }
     return jsonify(return_obj), 404
 
@@ -43,7 +56,7 @@ def error_405(e):
     print(e)
     return_obj = {
         "result": False,
-        "error": "method not allowed",
+        "msg": "method not allowed",
     }
     return jsonify(return_obj), 405
 
@@ -53,9 +66,9 @@ def error_405(e):
 # <==================================================================================================>
 @errorpage_blueprint.app_errorhandler(500)
 def error_500(e):
-    print(e)
+    print(f"Error: {e}")
     return_obj = {
         "result": False,
-        "error": "internal server error"
+        "msg": "internal server error"
     }
     return jsonify(return_obj), 500

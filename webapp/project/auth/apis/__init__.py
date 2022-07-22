@@ -59,7 +59,7 @@ def send_email(**kwargs):
 
 
 # <==================================================================================================>
-#                                        SEND EMAIL FUNCTION
+#                                        RANDOM PASSWORD GENERATOR
 # <==================================================================================================>
 def generate_password(password_length: int):
     characters = list(string.ascii_letters + string.digits + "!@#$%^&*()")

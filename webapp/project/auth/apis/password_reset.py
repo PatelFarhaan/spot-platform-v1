@@ -1,7 +1,7 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
-from flask import request, jsonify
+from flask import request, jsonify, abort
 from project.auth.apis import auth_blueprint
 from project.auth.json_schema_validation.password_reset_validation import validate_password_reset_schema
 from project.models import Users
@@ -15,9 +15,6 @@ from werkzeug.security import generate_password_hash
 def reset_link():
     input_request = request.get_json()
     response = validate_password_reset_schema(input_request)
-
-    if not response["result"]:
-        return jsonify(response)
 
     email = response["data"]["email"].lower()
     secret_code = response["data"]["secret_code"]
@@ -33,8 +30,7 @@ def reset_link():
 
     if not user:
         print(f"Auth: reset-link: user does not exist: {email}")
-        return jsonify(
-            {"result": False, "msg": "There was an error. Please try again."})
+        abort(404, description="email sent if the user exists")
 
     if generate_password_hash(new_password) == user.password:
         print(f"Auth: reset-link: old and new password cannot be the same: {email}")

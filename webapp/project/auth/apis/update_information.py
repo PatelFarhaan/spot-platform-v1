@@ -18,10 +18,6 @@ from project.auth.serializer.login_schema import LoginSchema
 def update_info():
     input_data = request.get_json()
     response = validate_update_information_schema(input_data)
-
-    if not response["result"]:
-        return jsonify(response)
-
     data = response["data"]
 
     for field, new_value in data.items():

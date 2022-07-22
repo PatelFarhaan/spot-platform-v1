@@ -1,7 +1,7 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
-from flask import request, jsonify, url_for
+from flask import request, jsonify, url_for, abort
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_login import login_user
 from project import serial
@@ -19,8 +19,6 @@ from werkzeug.security import check_password_hash
 def login():
     input_request = request.get_json()
     response = validate_login_schema(input_request)
-    if not response["result"]:
-        return jsonify(response)
 
     email = response["data"]["email"].lower()
     password = response["data"]["password"]
@@ -28,9 +26,8 @@ def login():
     user = Users.objects.filter(email=email).first()
 
     if user is None:
-        msg = "user does not exist"
         print(f"Auth: login: does not exist: {email}")
-        return jsonify({"result": False, "msg": msg})
+        abort(404, description="user does not exist")
 
     if not user.email_confirmed:
         msg = "please confirm your email address"

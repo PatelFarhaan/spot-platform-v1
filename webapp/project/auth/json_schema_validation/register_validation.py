@@ -1,6 +1,7 @@
 # <==================================================================================================>
 #                                         IMPORTS
 # <==================================================================================================>
+from flask import abort
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError
 from jsonschema.exceptions import ValidationError
@@ -41,7 +42,7 @@ def validate_register_schema(data):
     try:
         validate(instance=data, schema=register_schema)
     except ValidationError as e:
-        return {'result': False, 'error': e.message}
+        abort(400, description=e.message)
     except SchemaError as e:
-        return {'result': False, 'error': e.message}
+        abort(400, description=e.message)
     return {'result': True, 'data': data}
