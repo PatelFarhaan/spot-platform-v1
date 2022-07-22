@@ -1,10 +1,10 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
+import random
+import string
 import threading
 from functools import wraps
-import string
-import random
 
 from flask import Blueprint
 from flask import jsonify
@@ -73,19 +73,8 @@ def generate_password(password_length: int):
     return "".join(password)
 
 
-# # <==================================================================================================>
-# #                                       IMPORT ROUTES
-# # <==================================================================================================>
-# @app.route("/refresh", methods=["POST"])
-# @jwt_required(refresh=True)
-# def refresh():
-#     identity = get_jwt_identity()
-#     access_token = create_access_token(identity=identity)
-#     return jsonify(access_token=access_token)
-
-
 # <==================================================================================================>
 #                                       IMPORT ROUTES
 # <==================================================================================================>
 from . import (register, login, logout, jwt_expired_check, forgot_password, update_information,
-               email_confirmation, password_reset)
+               email_confirmation, password_reset, refresh_jwt_token)
