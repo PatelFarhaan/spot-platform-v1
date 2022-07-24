@@ -3,6 +3,7 @@
 # <==================================================================================================>
 from flask_marshmallow import fields as fd
 from project import ma
+from project.auth.serializer.login_schema import LoginSchema
 
 
 # <==================================================================================================>
@@ -10,6 +11,11 @@ from project import ma
 # <==================================================================================================>
 class CreateApplicationSchema(ma.Schema):
     id = fd.fields.String()
+    user = fd.fields.Method("get_users_schema")
+
+    def get_users_schema(self, application_object):
+        ma_schema = LoginSchema()
+        return ma_schema.dump(application_object.user)
 
     class Meta:
         fields = (

@@ -20,6 +20,7 @@ application_blueprint = Blueprint('application', __name__, url_prefix='/api/v1/a
 # <==================================================================================================>
 @jwt.user_identity_loader
 def user_identity_lookup(user):
+    print(user)
     return user["email"]
 
 
@@ -61,6 +62,17 @@ def fetch_single_record(**kwargs):
 def fetch_multiple_record(**kwargs):
     apps = Application.objects.filter(**kwargs).all()
     return apps
+
+
+# <==================================================================================================>
+#                                           RETURN DATA
+# <==================================================================================================>
+def return_data(result, message, data=None):
+    return jsonify({
+        "result": result,
+        "msg": message,
+        "data": data
+    })
 
 
 # <==================================================================================================>

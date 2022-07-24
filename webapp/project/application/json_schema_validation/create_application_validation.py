@@ -21,7 +21,7 @@ create_application_schema = {
         "spot_config": {
             "type": "object",
         },
-        "security_gruops": {
+        "security_groups": {
             "type": "object",
         },
         "ebs_volume_size": {
@@ -46,9 +46,8 @@ create_application_schema = {
             "type": "string",
         },
     },
-    "required": ["tags", "od_config", "spot_config", "security_gruops", "company",
-                 "ebs_volume_size", "app_name", "iam_role", "aws_region", "ssh_key_name",
-                 "aws_ecr_acc_id", "environment"],
+    "required": ["tags", "od_config", "spot_config", "security_groups", "ebs_volume_size", "app_name", "iam_role",
+                 "aws_region", "ssh_key_name", "aws_ecr_acc_id", "environment"],
     "additionalProperties": False
 }
 
@@ -60,4 +59,4 @@ def validate_create_application_schema(data):
         abort(400, description=e.message)
     except SchemaError as e:
         abort(400, description=e.message)
-    return {'result': True, 'data': data}
+    return data

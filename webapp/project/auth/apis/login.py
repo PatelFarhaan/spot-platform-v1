@@ -2,7 +2,7 @@
 #                                       IMPORTS
 # <==================================================================================================>
 from common_utilities.emails.email_confirmation import send_email_confirmation
-from flask import request, jsonify, url_for
+from flask import request, url_for
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_login import login_user
 from project import serial
@@ -10,7 +10,7 @@ from project.auth.json_schema_validation.login_validation import validate_login_
 from project.auth.serializer.login_schema import LoginSchema
 from werkzeug.security import check_password_hash
 
-from . import auth_blueprint, send_email, fetch_single_record
+from . import auth_blueprint, send_email, fetch_single_record, return_data
 
 
 # <==================================================================================================>
@@ -27,11 +27,10 @@ def login():
     user = fetch_single_record(email=email)
 
     if not user.email_confirmed:
-        msg = "please confirm your email address"
         token = serial.dumps(email, salt='email_confirm')
         link = url_for('auth.email_confirmed', token=token, _external=True)
         send_email(target=send_email_confirmation, args=(user, link))
-        return jsonify({"result": True, "msg": msg})
+        return return_data(True, "please confirm your email address")
 
     if user and check_password_hash(user.password, password):
         login_user(user)
@@ -51,10 +50,6 @@ def login():
             "access_token": access_token,
             "refresh_token": refresh_token
         }
-        return {
-            "result": True,
-            "data": return_obj
-        }
+        return return_data(True, "success", return_obj)
     else:
-
-        return jsonify({"result": False, "msg": "wrong credentials"})
+        return return_data(False, "wrong credentials")

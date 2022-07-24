@@ -2,13 +2,13 @@
 #                                       IMPORTS
 # <==================================================================================================>
 from common_utilities.emails.email_confirmation import send_email_confirmation
-from flask import url_for, request, jsonify
+from flask import url_for, request
 from project import serial
 from project.auth.json_schema_validation.register_validation import validate_register_schema
 from project.models import Users
 from werkzeug.security import generate_password_hash
 
-from . import auth_blueprint, send_email
+from . import auth_blueprint, send_email, return_data
 
 
 # <==================================================================================================>
@@ -24,7 +24,7 @@ def register():
 
     if email_exist:
         print(f"Auth: register: exists: {email}")
-        return jsonify({"result": False, "msg": "email exists"})
+        return return_data(False, "email exists")
 
     input_request["password"] = generate_password_hash(input_request["password"])
     input_request["email"] = input_request["email"].lower()
@@ -36,4 +36,4 @@ def register():
     link = url_for('auth.email_confirmed', token=token, _external=True)
     send_email(target=send_email_confirmation, args=(new_user, link))
 
-    return jsonify({"result": True, "msg": "user created"})
+    return return_data(True, "user created")

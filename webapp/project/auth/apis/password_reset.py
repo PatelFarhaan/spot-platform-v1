@@ -1,11 +1,11 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
-from flask import request, jsonify
+from flask import request
 from project.auth.json_schema_validation.password_reset_validation import validate_password_reset_schema
 from werkzeug.security import generate_password_hash
 
-from . import auth_blueprint, fetch_single_record
+from . import auth_blueprint, fetch_single_record, return_data
 
 
 # <==================================================================================================>
@@ -23,24 +23,20 @@ def reset_link():
 
     if new_password != confirm_password:
         print(f"Auth: reset-link: new and confirm password does not match: {email}")
-        return jsonify(
-            {"result": False, "msg": "Both passwords should be same"})
+        return return_data(False, "Both passwords should be same")
 
     user = fetch_single_record(email=email)
 
     if generate_password_hash(new_password) == user.password:
         print(f"Auth: reset-link: old and new password cannot be the same: {email}")
-        return jsonify(
-            {"result": False, "msg": "New and old password cannot be the same. Please choose a new password."})
+        return return_data(False, "New and old password cannot be the same. Please choose a new password.")
 
     if secret_code != user.password_reset_code:
         print(f"Auth: reset-link: password reset secret code did not match: {email}")
-        return jsonify(
-            {"result": False, "msg": "Invalid secret code."})
+        return return_data(False, "Invalid secret code.")
 
     user.password = generate_password_hash(new_password)
     user.password_reset_code = ""
     user.save()
     print(f"Auth: reset-link: password changed: {email}")
-    return jsonify(
-        {"result": True, "msg": "password successfully changed."})
+    return return_data(True, "password successfully changed.")
