@@ -1,12 +1,11 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
-from flask import request, jsonify, abort
+from flask import request, jsonify
 from project.auth.json_schema_validation.password_reset_validation import validate_password_reset_schema
-from project.models import Users
 from werkzeug.security import generate_password_hash
 
-from . import auth_blueprint
+from . import auth_blueprint, fetch_single_record
 
 
 # <==================================================================================================>
@@ -27,11 +26,7 @@ def reset_link():
         return jsonify(
             {"result": False, "msg": "Both passwords should be same"})
 
-    user = Users.objects.filter(email=email).first()
-
-    if not user:
-        print(f"Auth: reset-link: user does not exist: {email}")
-        abort(404, description="email sent if the user exists")
+    user = fetch_single_record(email=email)
 
     if generate_password_hash(new_password) == user.password:
         print(f"Auth: reset-link: old and new password cannot be the same: {email}")

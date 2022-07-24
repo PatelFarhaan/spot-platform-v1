@@ -2,16 +2,15 @@
 #                                       IMPORTS
 # <==================================================================================================>
 from common_utilities.emails.email_confirmation import send_email_confirmation
-from flask import request, jsonify, url_for, abort
+from flask import request, jsonify, url_for
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_login import login_user
 from project import serial
 from project.auth.json_schema_validation.login_validation import validate_login_schema
 from project.auth.serializer.login_schema import LoginSchema
-from project.models import Users
 from werkzeug.security import check_password_hash
 
-from . import auth_blueprint, send_email
+from . import auth_blueprint, send_email, fetch_single_record
 
 
 # <==================================================================================================>
@@ -25,11 +24,7 @@ def login():
     email = response["data"]["email"].lower()
     password = response["data"]["password"]
 
-    user = Users.objects.filter(email=email).first()
-
-    if user is None:
-        print(f"Auth: login: does not exist: {email}")
-        abort(404, description="user does not exist")
+    user = fetch_single_record(email=email)
 
     if not user.email_confirmed:
         msg = "please confirm your email address"

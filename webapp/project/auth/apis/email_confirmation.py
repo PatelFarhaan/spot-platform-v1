@@ -1,11 +1,10 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
-from flask import jsonify, abort
+from flask import jsonify
 from project import serial
-from project.models import Users
 
-from . import auth_blueprint
+from . import auth_blueprint, fetch_single_record
 
 
 # <==================================================================================================>
@@ -21,12 +20,7 @@ def email_confirmed(token):
         return jsonify(
             {"result": False, "msg": "There was an error while confirming the email address. Please try again."})
 
-    user = Users.objects.filter(email=email).first()
-
-    if user is None:
-        print(f"Auth: email-confirmed: user does not exist {email}")
-        msg = "There was an error while confirming the email address. Please try again."
-        abort(404, description=msg)
+    user = fetch_single_record(email=email)
 
     if user.password_confirm_meta_data == {}:
         return jsonify(

@@ -6,7 +6,7 @@ import string
 import threading
 from functools import wraps
 
-from flask import Blueprint
+from flask import Blueprint, abort
 from flask import jsonify
 from flask_jwt_extended import current_user
 from project import jwt
@@ -71,6 +71,19 @@ def generate_password(password_length: int):
 
     random.shuffle(password)
     return "".join(password)
+
+
+# <==================================================================================================>
+#                              FETCH SINGLE RECORD FROM THE DATABASE
+# <==================================================================================================>
+def fetch_single_record(**kwargs):
+    user = Users.objects.filter(**kwargs).first()
+
+    if user is None:
+        print(f"Auth: login: does not exist: {kwargs}")
+        abort(404, description="user does not exist")
+
+    return user
 
 
 # <==================================================================================================>

@@ -2,11 +2,10 @@
 #                                       IMPORTS
 # <==================================================================================================>
 from common_utilities.emails.forgot_password import send_forgot_password_email
-from flask import request, jsonify, abort
+from flask import request, jsonify
 from project.auth.json_schema_validation.forgot_password_validation import validate_forgot_password_schema
-from project.models import Users
 
-from . import auth_blueprint, generate_password, send_email
+from . import auth_blueprint, generate_password, send_email, fetch_single_record
 
 
 # <==================================================================================================>
@@ -18,11 +17,7 @@ def forgot_password_request():
     response = validate_forgot_password_schema(input_request)
 
     email = response["data"]["email"].lower()
-    user = Users.objects.filter(email=email).first()
-
-    if user is None:
-        print(f"Auth: forgot-password: user does not exist : {email}")
-        abort(404, description="email sent if the user exists")
+    user = fetch_single_record(email=email)
 
     secret_code = generate_password(7)
     user.password_reset_code = secret_code
