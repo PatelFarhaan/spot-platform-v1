@@ -18,4 +18,5 @@ def expired_jwt_token_check():
         "result": True,
         "msg": "token is valid"
     }
+
     return jsonify(resp_obj)

@@ -38,7 +38,9 @@ login_manager.blueprint_login_views = {
 #                                         BLUEPRINT
 # <==================================================================================================>
 from project.auth.apis import auth_blueprint
+from project.application.apis import application_blueprint
 from project.error.error_handler import errorpage_blueprint
 
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(errorpage_blueprint)
+app.register_blueprint(application_blueprint)

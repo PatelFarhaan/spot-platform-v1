@@ -32,5 +32,6 @@ def email_confirmed(token):
     user.password_confirm_meta_data = {}
     user.save()
     print(f"Auth: email-confirmed: logged in: {email}")
+
     return jsonify(
         {"result": True, "msg": "Email is confirmed. Please login."})

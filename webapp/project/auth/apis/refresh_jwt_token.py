@@ -16,7 +16,10 @@ from . import auth_blueprint, check_if_user_is_logged_in
 def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity, fresh=False)
+
     return jsonify({
         "result": True,
-        "token": access_token
+        "data": {
+            "token": access_token
+        }
     })

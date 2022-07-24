@@ -45,11 +45,16 @@ def login():
         jwt_obj = {"email": email}
         access_token = create_access_token(identity=jwt_obj)
         refresh_token = create_refresh_token(identity=jwt_obj)
-        return {
-            "result": True,
+
+        return_obj = {
             "user": user_objs,
             "access_token": access_token,
             "refresh_token": refresh_token
         }
+        return {
+            "result": True,
+            "data": return_obj
+        }
     else:
+
         return jsonify({"result": False, "msg": "wrong credentials"})
