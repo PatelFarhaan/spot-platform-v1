@@ -44,6 +44,8 @@ class Application(db.Document, UserMixin):
     spot_config = db.DictField()
     user = db.ReferenceField(Users)
     security_groups = db.DictField()
+    environment_variables = db.DictField()
+    domain = db.StringField(max_length=150)
     ebs_volume_size = db.IntField(default=8)
     iam_role = db.StringField(max_length=150)
     aws_region = db.StringField(max_length=70)
@@ -54,3 +56,33 @@ class Application(db.Document, UserMixin):
     environment = db.StringField(choices=('Development', 'Staging', 'Production'))
 
     meta = dict(indexes=['app_name', 'environment'])
+
+
+# <==================================================================================================>
+#                                       DATABASE COLLECTION
+# <==================================================================================================>
+class Database(db.Document, UserMixin):
+    port = db.IntField()
+    user = db.ReferenceField(Users)
+    name = db.StringField(max_length=70)
+    host = db.StringField(max_length=100)
+    version = db.StringField(max_length=10)
+    username = db.StringField(max_length=100)
+    password = db.StringField(max_length=100)
+    application = db.ReferenceField(Application)
+    type = db.StringField(choices=('postgresql', 'mysql', 'mongodb'))
+
+    meta = dict(indexes=['name'])
+
+
+# <==================================================================================================>
+#                                       AWS COLLECTION
+# <==================================================================================================>
+class Awscredentials(db.Document, UserMixin):
+    user = db.ReferenceField(Users)
+    company = db.StringField(max_length=70)
+    access_key = db.StringField(max_length=250)
+    secret_key = db.StringField(max_length=250)
+    name = db.StringField(max_length=70, required=True, unique=True)
+
+    meta = dict(indexes=['user'])

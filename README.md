@@ -17,6 +17,7 @@ need of the traffic.
 - [ ] Monitoring Stack (Promtail, Prometheus, Grafana and Loki)
 - [ ] Docker to install and configure agents in the form of Backed AMI
 
+https://www.youtube.com/watch?v=Fwsyq5zIhsg
 
 # Services 
 - Single click deployment
