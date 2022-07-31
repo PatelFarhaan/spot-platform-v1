@@ -74,19 +74,6 @@ def generate_password(password_length: int):
 
 
 # <==================================================================================================>
-#                              FETCH SINGLE RECORD FROM THE DATABASE
-# <==================================================================================================>
-def fetch_single_record(**kwargs):
-    user = Users.objects.filter(**kwargs).first()
-
-    if user is None:
-        print(f"Auth: login: does not exist: {kwargs}")
-        abort(404, description="user does not exist")
-
-    return user
-
-
-# <==================================================================================================>
 #                                           RETURN DATA
 # <==================================================================================================>
 def return_data(result, message, data=None):

@@ -9,7 +9,7 @@ from jsonschema.exceptions import ValidationError
 # <==================================================================================================>
 #                                  CREATE APPLICATION SCHEMA VALIDATION
 # <==================================================================================================>
-create_credentials_schema = {
+create_aws_credentials_schema = {
     "type": "object",
     "properties": {
         "name": {
@@ -27,9 +27,9 @@ create_credentials_schema = {
 }
 
 
-def validate_create_credentials_schema(data):
+def validate_create_aws_credentials_schema(data):
     try:
-        validate(instance=data, schema=create_credentials_schema)
+        validate(instance=data, schema=create_aws_credentials_schema)
     except ValidationError as e:
         abort(400, description=e.message)
     except SchemaError as e:

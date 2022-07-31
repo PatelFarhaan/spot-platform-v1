@@ -21,14 +21,14 @@ from . import application_blueprint, check_if_user_is_logged_in, return_data
 @jwt_required()
 @check_if_user_is_logged_in()
 def application():
-    input_request = request.get_json()
-    response = validate_create_application_schema(input_request)
+    body = request.get_json()
+    validate_create_application_schema(body)
 
-    app_name = response["app_name"]
-    response["user"] = current_user
+    app_name = body["app_name"]
+    body["user"] = current_user
 
     try:
-        new_application = Application(**response)
+        new_application = Application(**body)
         new_application.save()
     except ValidationError as e:
         return return_data(False, str(e.errors))

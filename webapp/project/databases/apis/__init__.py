@@ -7,7 +7,7 @@ from flask import Blueprint
 from flask import jsonify
 from flask_jwt_extended import current_user
 from project import jwt
-from project.models import Database, Users
+from project.models import Users
 
 # <==================================================================================================>
 #                                    BLUEPRINT
@@ -46,22 +46,6 @@ def check_if_user_is_logged_in():
         return decorator
 
     return wrapper
-
-
-# <==================================================================================================>
-#                              FETCH SINGLE RECORD FROM THE DATABASE
-# <==================================================================================================>
-def fetch_single_record(**kwargs):
-    app = Database.objects.filter(**kwargs).first()
-    return app
-
-
-# <==================================================================================================>
-#                              FETCH MULTIPLE RECORD FROM THE DATABASE
-# <==================================================================================================>
-def fetch_multiple_record(**kwargs):
-    apps = Database.objects.filter(**kwargs).all()
-    return apps
 
 
 # <==================================================================================================>

@@ -1,12 +1,12 @@
 # <==================================================================================================>
 #                                       IMPORTS
 # <==================================================================================================>
+import ipdb
 from common_utilities.emails.email_confirmation import send_email_confirmation
 from flask import url_for, request
 from project import serial
 from project.auth.json_schema_validation.register_validation import validate_register_schema
 from project.models import Users
-from werkzeug.security import generate_password_hash
 
 from . import auth_blueprint, send_email, return_data
 
@@ -16,19 +16,14 @@ from . import auth_blueprint, send_email, return_data
 # <==================================================================================================>
 @auth_blueprint.route('/register', methods=['POST'])
 def register():
-    input_request = request.get_json()
-    response = validate_register_schema(input_request)
+    body = request.get_json()
+    validate_register_schema(body)
 
-    email = response["data"]["email"].lower()
-    email_exist = Users.objects.filter(email=email).first()
-
-    if email_exist:
-        print(f"Auth: register: exists: {email}")
-        return return_data(False, "email exists")
-
-    input_request["password"] = generate_password_hash(input_request["password"])
-    input_request["email"] = input_request["email"].lower()
-    new_user = Users(**input_request)
+    email = body["email"].lower()
+    new_user = Users(**body)
+    new_user.check_if_email_exists()
+    new_user.hash_password()
+    new_user.lower_email()
     new_user.save()
     print(f"Auth: register: created {email}")
 

@@ -7,12 +7,12 @@ from flask import Blueprint
 from flask import jsonify
 from flask_jwt_extended import current_user
 from project import jwt
-from project.models import Awscredentials, Users
+from project.models import Users
 
 # <==================================================================================================>
 #                                    BLUEPRINT
 # <==================================================================================================>
-cloud_credentials_blueprint = Blueprint('cloud_credentials', __name__, url_prefix='/api/v1/cloud_credentials')
+credentials_blueprint = Blueprint('credentials', __name__, url_prefix='/api/v1/credentials')
 
 
 # <==================================================================================================>
@@ -62,4 +62,4 @@ def return_data(result, message, data=None):
 # <==================================================================================================>
 #                                       IMPORT ROUTES
 # <==================================================================================================>
-from . import (create_credentials)
+from . import (create_aws_credentials, create_github_credentials)

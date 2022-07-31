@@ -3,8 +3,10 @@
 # <==================================================================================================>
 import datetime
 
+from flask import abort
 from flask_login import UserMixin
 from project import db, login_manager
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 # <==================================================================================================>
@@ -16,9 +18,26 @@ def user_load(user_id):
 
 
 # <==================================================================================================>
+#                                           BASE COLLECTION
+# <==================================================================================================>
+class BaseCollection(db.Document, UserMixin):
+    meta = {'abstract': True}
+
+    @classmethod
+    def fetch_one_record(cls, **kwargs):
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            print(f"BaseCollection Error: {e}")
+            abort(404, description="resource does not exist")
+
+
+# <==================================================================================================>
 #                                          USERS COLLECTION
 # <==================================================================================================>
-class Users(db.Document, UserMixin):
+class Users(BaseCollection):
+    __meta__ = "Users"
+
     password = db.StringField()
     applications = db.DictField()
     company = db.StringField(max_length=70)
@@ -34,11 +53,25 @@ class Users(db.Document, UserMixin):
 
     meta = dict(indexes=['email', 'is_logged_in', 'applications'])
 
+    def check_if_email_exists(self):
+        if Users.objects.filter(email=self.email.lower()).first():
+            abort(409, description="user already exists")
+
+    def lower_email(self):
+        self.email = self.email.lower()
+
+    def hash_password(self):
+        self.password = generate_password_hash(password=self.password)
+
+    def check_password(self, password):
+        if not check_password_hash(self.password, password):
+            abort(401, description="wrong credentials")
+
 
 # <==================================================================================================>
 #                                       APPLICATION COLLECTION
 # <==================================================================================================>
-class Application(db.Document, UserMixin):
+class Application(BaseCollection):
     tags = db.DictField()
     od_config = db.DictField()
     spot_config = db.DictField()
@@ -61,7 +94,7 @@ class Application(db.Document, UserMixin):
 # <==================================================================================================>
 #                                       DATABASE COLLECTION
 # <==================================================================================================>
-class Database(db.Document, UserMixin):
+class Database(BaseCollection):
     port = db.IntField()
     user = db.ReferenceField(Users)
     name = db.StringField(max_length=70)
@@ -78,11 +111,23 @@ class Database(db.Document, UserMixin):
 # <==================================================================================================>
 #                                       AWS COLLECTION
 # <==================================================================================================>
-class Awscredentials(db.Document, UserMixin):
+class Awscredentials(BaseCollection):
     user = db.ReferenceField(Users)
     company = db.StringField(max_length=70)
     access_key = db.StringField(max_length=250)
     secret_key = db.StringField(max_length=250)
+    name = db.StringField(max_length=70, required=True, unique=True)
+
+    meta = dict(indexes=['user'])
+
+
+# <==================================================================================================>
+#                                       GITHUB COLLECTION
+# <==================================================================================================>
+class Githubcredentials(BaseCollection):
+    user = db.ReferenceField(Users)
+    company = db.StringField(max_length=70)
+    github_token = db.StringField(max_length=250)
     name = db.StringField(max_length=70, required=True, unique=True)
 
     meta = dict(indexes=['user'])

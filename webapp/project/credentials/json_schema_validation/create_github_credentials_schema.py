@@ -7,24 +7,23 @@ from jsonschema.exceptions import SchemaError
 from jsonschema.exceptions import ValidationError
 
 # <==================================================================================================>
-#                                        LOGIN SCHEMA VALIDATION
+#                                  CREATE APPLICATION SCHEMA VALIDATION
 # <==================================================================================================>
-forgot_password_schema = {
+create_github_credentials_schema = {
     "type": "object",
     "properties": {
-        "email": {
+        "github_token": {
             "type": "string",
-            "format": "email"
-        }
+        },
     },
-    "required": ["email"],
+    "required": ["github_token"],
     "additionalProperties": False
 }
 
 
-def validate_forgot_password_schema(data):
+def validate_create_github_credentials_schema(data):
     try:
-        validate(instance=data, schema=forgot_password_schema)
+        validate(instance=data, schema=create_github_credentials_schema)
     except ValidationError as e:
         abort(400, description=e.message)
     except SchemaError as e:

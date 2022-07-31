@@ -8,9 +8,9 @@ from flask_login import login_user
 from project import serial
 from project.auth.json_schema_validation.login_validation import validate_login_schema
 from project.auth.serializer.login_schema import LoginSchema
-from werkzeug.security import check_password_hash
+from project.models import Users
 
-from . import auth_blueprint, send_email, fetch_single_record, return_data
+from . import auth_blueprint, send_email, return_data
 
 
 # <==================================================================================================>
@@ -18,13 +18,13 @@ from . import auth_blueprint, send_email, fetch_single_record, return_data
 # <==================================================================================================>
 @auth_blueprint.route('/login', methods=['POST'])
 def login():
-    input_request = request.get_json()
-    response = validate_login_schema(input_request)
+    body = request.get_json()
+    validate_login_schema(body)
 
-    email = response["data"]["email"].lower()
-    password = response["data"]["password"]
+    email = body["email"].lower()
+    password = body["password"]
 
-    user = fetch_single_record(email=email)
+    user = Users.fetch_one_record(email=email)
 
     if not user.email_confirmed:
         token = serial.dumps(email, salt='email_confirm')
@@ -32,24 +32,22 @@ def login():
         send_email(target=send_email_confirmation, args=(user, link))
         return return_data(True, "please confirm your email address")
 
-    if user and check_password_hash(user.password, password):
-        login_user(user)
-        user.is_logged_in = True
-        user.save()
-        print(f"Auth: login: logged in: {email}")
+    user.check_password(password)
+    login_user(user)
+    user.is_logged_in = True
+    user.save()
+    print(f"Auth: login: logged in: {email}")
 
-        ma_schema = LoginSchema()
-        user_objs = ma_schema.dump(user)
+    ma_schema = LoginSchema()
+    user_objs = ma_schema.dump(user)
 
-        jwt_obj = {"email": email}
-        access_token = create_access_token(identity=jwt_obj)
-        refresh_token = create_refresh_token(identity=jwt_obj)
+    jwt_obj = {"email": email}
+    access_token = create_access_token(identity=jwt_obj)
+    refresh_token = create_refresh_token(identity=jwt_obj)
 
-        return_obj = {
-            "user": user_objs,
-            "access_token": access_token,
-            "refresh_token": refresh_token
-        }
-        return return_data(True, "success", return_obj)
-    else:
-        return return_data(False, "wrong credentials")
+    return_obj = {
+        "user": user_objs,
+        "access_token": access_token,
+        "refresh_token": refresh_token
+    }
+    return return_data(True, "success", return_obj)

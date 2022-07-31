@@ -25,7 +25,7 @@ update_information_schema = {
             "type": "string"
         }
     },
-    "required": ["first_name", "last_name", "company", "position"],
+    "required": [],
     "additionalProperties": False
 }
 
@@ -37,4 +37,4 @@ def validate_update_information_schema(data):
         abort(400, description=e.message)
     except SchemaError as e:
         abort(400, description=e.message)
-    return {'result': True, 'data': data}
+    return data

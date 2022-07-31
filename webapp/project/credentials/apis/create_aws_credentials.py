@@ -4,11 +4,11 @@
 from flask import request, abort
 from flask_jwt_extended import jwt_required, current_user
 from mongoengine.errors import ValidationError, NotUniqueError
-from project.cloud_credentials.json_schema_validation.create_credentials_schema import \
-    validate_create_credentials_schema
+from project.credentials.json_schema_validation.create_aws_credentials_schema import \
+    validate_create_aws_credentials_schema
 from project.models import Awscredentials
 
-from . import cloud_credentials_blueprint, check_if_user_is_logged_in, return_data
+from . import credentials_blueprint, check_if_user_is_logged_in, return_data
 
 
 # <==================================================================================================>
@@ -16,19 +16,18 @@ from . import cloud_credentials_blueprint, check_if_user_is_logged_in, return_da
 # <==================================================================================================>
 # TODO: Try to connect to Aws and see if the keys are valid and get the list of access it has
 
-@cloud_credentials_blueprint.route('/create-application', methods=['POST'])
+@credentials_blueprint.route('/create-credentials/aws', methods=['POST'])
 @jwt_required()
 @check_if_user_is_logged_in()
-def application():
-    input_request = request.get_json()
-    response = validate_create_credentials_schema(input_request)
+def create_aws_credentials():
+    body = request.get_json()
+    validate_create_aws_credentials_schema(body)
 
-    response["user"] = current_user
-    response["company"] = current_user.company
+    body["user"] = current_user
+    body["company"] = current_user.company
 
     try:
-        new_credentials = Awscredentials(**response)
-        new_credentials.save()
+        Awscredentials(**body).save()
     except ValidationError as e:
         return return_data(False, str(e.errors))
     except NotUniqueError as e:

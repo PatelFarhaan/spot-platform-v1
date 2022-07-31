@@ -2,8 +2,9 @@
 #                                       IMPORTS
 # <==================================================================================================>
 from project import serial
+from project.models import Users
 
-from . import auth_blueprint, fetch_single_record, return_data
+from . import auth_blueprint, return_data
 
 
 # <==================================================================================================>
@@ -19,15 +20,15 @@ def email_confirmed(token):
         msg = "There was an error while confirming the email address. Please try again."
         return return_data(False, msg)
 
-    user = fetch_single_record(email=email)
+    user = Users.fetch_single_record(email=email)
 
     if user.password_confirm_meta_data == {}:
         return return_data(False, "This link has already been used.")
 
     print(f"Auth: email-confirmed: email confirmed: {email}")
+    user.password_confirm_meta_data = {}
     user.email_confirmed = True
     user.is_logged_in = False
-    user.password_confirm_meta_data = {}
     user.save()
     print(f"Auth: email-confirmed: logged in: {email}")
 

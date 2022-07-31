@@ -45,4 +45,4 @@ def validate_register_schema(data):
         abort(400, description=e.message)
     except SchemaError as e:
         abort(400, description=e.message)
-    return {'result': True, 'data': data}
+    return data

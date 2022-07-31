@@ -156,7 +156,7 @@ def get_email_template():
             If you requested a password reset, click here to create a new one:
          </p>
          <div style="text-align: center;">
-            <a style="color: white; text-decoration: none;" target="_blank" href="{password_reset_link}">
+            <a style="color: white; text-decoration: none;" target="_blank" href="{secret_code}">
             <button>
             Reset my Password
             </button>
@@ -168,7 +168,7 @@ def get_email_template():
             <p class="sizing">
                <strong class="sizing">Button not working?</strong><br />
                Just click on the link below or paste it into your browser.
-               {password_reset_link}
+               {secret_code}
             </p>
             <p class="sizing">
                You received this email because you requested a password reset. If you
