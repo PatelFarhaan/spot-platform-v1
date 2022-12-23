@@ -2,107 +2,56 @@
 #                                          IMPORTS
 # <==================================================================================================>
 import sys
-import boto3
 import shutil
-import requests
+from .aws import AWS
+from os import environ
 from datetime import datetime
-from botocore.exceptions import ClientError
 
 
 # <==================================================================================================>
-#                                          AWS CLIENT
+#                                       DISK SPACE CHECK UTILITY
 # <==================================================================================================>
-class AWS(object):
+class DiskSpaceChecker(AWS):
     def __init__(self):
+        super().__init__()
+        self.log_obj = dict()
         self.autoscale = "autoscaling"
-        self.aws_config = {
-            "region_name": aws_region
-        }
+        self.log_obj["instance_id"] = self.instance_id
+        self.free_disk_threshold_gb = int(environ["free_disk_threshold_in_gb"])
+        self.log_obj["current_dt"] = datetime.now().strftime("%b %d %Y, %H:%M:%S")
 
-    @staticmethod
-    def exception_block(e, client_name):
-        print(f"{client_name} client is None")
-        print(f"Code Exception is: {e.response['Error']['Code']}")
-        print(f"Error Message is: {e.response['Error']['Message']}")
-        print(f"Status Code is: {e.response['ResponseMetadata']['HTTPStatusCode']}")
-        sys.exit(1)
+    def is_disk_full(self):
+        total, used, free = shutil.disk_usage("/")
+        _free = free // (2 ** 30)
 
-    def get_autoscale_client(self):
-        try:
-            as_client = boto3.client(self.autoscale, **self.aws_config)
-            return as_client
-        except ClientError as e:
-            self.exception_block(e, "Autoscale")
+        if _free <= self.free_disk_threshold_gb:
+            self.log_obj["disk_full"] = True
+            self.log_obj["remaining"] = f"{_free} GB"
+            return True
 
+        self.log_obj["disk_full"] = False
+        self.log_obj["remaining"] = f"{_free} GB"
+        print(self.log_obj)
+        sys.exit(0)
 
-# <==================================================================================================>
-#                                          PRINT CURRENT DATETIME
-# <==================================================================================================>
-def get_current_dt():
-    now = datetime.now()
-    dt_string = now.strftime("%b %d %Y, %H:%M:%S")
-    return dt_string
+    def mark_instance_as_unhealthy(self):
+        asg_client = self.get_boto3_client(self.autoscale)
 
+        response = asg_client.set_instance_health(
+            HealthStatus="Unhealthy",
+            InstanceId=self.instance_id
+        )
+        self.log_obj["unhealthy_api_response"] = response
 
-# <==================================================================================================>
-#                                          ANALYZING DISK SIZE
-# <==================================================================================================>
-def is_disk_full():
-    total, used, free = shutil.disk_usage("/")
-    _free = free // (2 ** 30)
-
-    if _free <= free_disk_threshold_gb:
-        log_obj["disk_full"] = True
-        log_obj["remaining"] = f"{_free} GB"
-        return True
-
-    log_obj["disk_full"] = False
-    log_obj["remaining"] = f"{_free} GB"
-    print(log_obj)
-    sys.exit(0)
-
-
-# <==================================================================================================>
-#                                           GET INSTANCE ID
-# <==================================================================================================>
-def get_instance_id():
-    url = "http://169.254.169.254/latest/meta-data/instance-id"
-    resp = requests.get(url)
-    return resp.text
-
-
-# <==================================================================================================>
-#                                           GET AWS REGION
-# <==================================================================================================>
-def get_aws_region():
-    url = "http://169.254.169.254/latest/meta-data/placement/availability-zone"
-    resp = requests.get(url)
-    return resp.text[:-1]
-
-
-# <==================================================================================================>
-#                                         MARK INSTANCE AS UNHEALTHY
-# <==================================================================================================>
-def mark_instance_as_unhealthy():
-    instance_id = get_instance_id()
-    response = asg_obj.set_instance_health(
-        InstanceId=instance_id,
-        HealthStatus="Unhealthy"
-    )
-    log_obj["unhealthy_api_response"] = response
+    def run(self):
+        self.is_disk_full()
+        self.mark_instance_as_unhealthy()
+        print(self.log_obj)
 
 
 # <==================================================================================================>
 #                                          MAIN CALLING FUNCTION
 # <==================================================================================================>
 if __name__ == '__main__':
-    log_obj = {}
-    log_obj["instance_id"] = get_instance_id()
-    log_obj["current_dt"] = get_current_dt()
-    free_disk_threshold_gb = 1
-    _result = is_disk_full()
-    aws_region = get_aws_region()
-    aws = AWS()
-    asg_obj = aws.get_autoscale_client()
-    mark_instance_as_unhealthy()
-    print(log_obj)
+    disk_utility_obj = DiskSpaceChecker()
+    disk_utility_obj.run()

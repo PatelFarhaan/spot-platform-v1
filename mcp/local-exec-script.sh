@@ -1,7 +1,7 @@
 #!/bin/bash
 
 volume_size=10
-company_name="redflag"
+company_name="roku"
 instance_size='r5a.xlarge'
 key_name_pair='redflag_ec2'
 subnet_id='subnet-2ea78701'
