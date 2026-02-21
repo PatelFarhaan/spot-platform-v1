@@ -1,0 +1,99 @@
+{
+  "env": "staging",
+  "company": "your-company",
+  "platform": "your-platform",
+  "ebs_volume_size": 8,
+  "prefix_name": "spot-",
+  "vpc_id": "vpc-xxxxxxxxx",
+  "aws_region": "us-east-1",
+  "ssh_key_name": "your-ec2-key",
+  "app_name": "your-app-name",
+  "iam_role": "your-iam-role",
+  "ami_id": "ami-xxxxxxxxxxxxxxxxx",
+  "aws_ecr_acc_id": "xxxxxxxxxxxx.dkr.ecr.us-east-1.amazonaws.com",
+  "acm_certificate": "arn:aws:acm:us-east-1:xxxxxxxxxxxx:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "cooldown_and_deregistration_metadata": {},
+  "security_groups": {
+    "alb": {
+      "ingress": [
+        {
+          "to_port": 80,
+          "from_port": 80,
+          "protocol": "tcp",
+          "cidr_blocks": ["0.0.0.0/0"],
+          "description": "HTTP from VPC"
+        },
+        {
+          "to_port": 443,
+          "from_port": 443,
+          "protocol": "tcp",
+          "cidr_blocks": ["0.0.0.0/0"],
+          "description": "TLS from VPC"
+        }
+      ]
+    },
+    "instance": {
+      "ingress": {
+        "cidr": [
+          {
+            "to_port": 22,
+            "from_port": 22,
+            "protocol": "tcp",
+            "cidr_blocks": ["your.ip.address/32"],
+            "description": "SSH"
+          }
+        ],
+        "sg": [
+          {
+            "to_port": 0,
+            "from_port": 0,
+            "protocol": "-1",
+            "description": "MCP Private Instance Connect",
+            "security_groups": ["sg-xxxxxxxxxxxxxxxxx"]
+          }
+        ]
+      }
+    }
+  },
+  "sns_subscriptions_metadata": [],
+  "tags": {
+    "MCP_SD": true,
+    "Owner": "YourOrg",
+    "Developer": "YourName",
+    "Environment": "staging",
+    "Provisioner": "Terraform",
+    "Name": "spot-your-app-name",
+    "Application": "your-app-name"
+  },
+  "availability_zones": [
+    "us-east-1a",
+    "us-east-1b",
+    "us-east-1c"
+  ],
+  "subnet_ids": [
+    "subnet-xxxxxxxxx",
+    "subnet-xxxxxxxxx",
+    "subnet-xxxxxxxxx"
+  ],
+  "od_config": {
+    "instance_type": "t2.medium",
+    "auto_scaling_group": {
+      "min_instances": 0,
+      "max_instances": 5,
+      "desired_instances": 0
+    }
+  },
+  "spot_config": {
+    "instance_type": [
+      "t4g.medium",
+      "t3a.medium",
+      "t3.medium",
+      "t2.medium"
+    ],
+    "auto_scaling_group": {
+      "min_instances": 0,
+      "max_instances": 5,
+      "desired_instances": 1
+    }
+  }
+}
